@@ -1,0 +1,41 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+*.swp
+*.swo
+*~
+.DS_Store
+
+.env
+.env.local
+
+plan.md
+CLAUDE.md
+
+.autoxrd.toml
+
+# Downloaded benchmark corpora and generated refinement trajectories
+benchmarks/data/
+benchmarks/results/
+
+
+# Ignore local configuration files that may contain sensitive information
+*.bat
+*.ps1
+*.env
+
+# vscode
+launch.json

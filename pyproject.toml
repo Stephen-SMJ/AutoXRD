@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autoxrd"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.40.0",
+    "httpx>=0.27.0",
+    "openai>=1.0.0",
+    "prompt_toolkit>=3.0.0",
+    "rich>=13.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["build>=1.2.0", "hatchling>=1.25.0", "pytest>=8.0", "pytest-asyncio>=0.23"]
+xrd = [
+    "numpy>=2.0",
+    "scipy>=1.13",
+    "pandas>=2.2",
+    "matplotlib>=3.9",
+    "gemmi>=0.7",
+    "PyCifRW>=5.0",
+    "pymatgen>=2025.1",
+    "scikit-learn>=1.5",
+    "optuna>=4.0",
+    "lmfit>=1.3",
+    "h5py>=3.11",
+    "Pillow>=10.4",
+    "pybaselines>=1.2",
+    "seekpath>=2.1",
+    "xmltodict>=0.14",
+    "requests>=2.32",
+    "pyFAI>=2025.1",
+    "fabio>=2024.9",
+    "xrayutilities>=1.7",
+    "diffpy.structure>=3.3",
+    "ase>=3.26",
+    "Pysimxrd>=0.1.2",
+    "openpyxl>=3.1",
+]
+
+[project.scripts]
+autoxrd = "tui.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/core", "src/features", "src/tui", "src/commands", "src/buddy", "src/tools", "src/xrd"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

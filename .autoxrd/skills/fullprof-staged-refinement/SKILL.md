@@ -2,7 +2,6 @@
 name: fullprof-staged-refinement
 description: Plan and execute an auditable staged FullProf Rietveld refinement from a powder pattern and candidate CIF or validated PCR template. Use for known-phase profile matching, Le Bail fitting, Rietveld refinement, QPA, and FullProf output review.
 allowed-tools: Read, Write, Edit, Bash
-arguments: task-paths
 ---
 
 # Staged FullProf Refinement
@@ -13,9 +12,10 @@ template, make one typed action group per run, and retain each input and output.
 ## Preconditions
 
 1. Run `/xrd-pattern-qc` and establish wavelength, radiation, geometry, scan range, and units.
-2. Validate CIF formula, space group, cell, atom labels, Wyckoff multiplicities, occupancies,
+2. Run `/xrd-structure-audit` and validate CIF formula, space group, cell, atom labels, Wyckoff multiplicities, occupancies,
    and displacement conventions.
-3. Preserve the source files. Create `runs/run_NNN/` containing `input.pcr`, `action.json`,
+3. Use `/fullprof-le-bail` and `/fullprof-pcr-compiler`; never modify PCR codewords directly.
+4. Preserve the source files. Create `runs/run_NNN/` containing `input.pcr`, `action.json`,
    program output, refined PCR, PRF, `metrics.json`, and warnings.
 
 ## Curriculum
@@ -29,8 +29,8 @@ template, make one typed action group per run, and retain each input and output.
 5. Final cycle: freeze unstable terms, rerun, parse covariance and uncertainties, and invoke
    `/xrd-physical-audit`.
 
-After every run compare Rwp, Rp, Rexp, GoF, maximum shift/esd, warnings, unexplained peaks,
-and parameter correlations. Reject singular, divergent, NaN, or physically invalid runs even
+After every run invoke `/xrd-residual-features` and `/xrd-trajectory-gate`, then compare Rwp, Rp,
+Rexp, GoF, maximum shift/esd, warnings, unexplained peaks, and parameter correlations. Reject singular, divergent, NaN, or physically invalid runs even
 when Rwp decreases. Do not simultaneously compensate uncertain wavelength with zero and cell.
 
 Consult `resources/FullProf_Manual.pdf` for PCR fields and the official FullProf documentation

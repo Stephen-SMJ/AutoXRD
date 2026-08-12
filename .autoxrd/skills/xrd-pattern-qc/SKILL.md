@@ -2,7 +2,6 @@
 name: xrd-pattern-qc
 description: Inspect powder XRD pattern quality and metadata before phase analysis or refinement. Use for XY, DAT, CSV, or whitespace two-column scans and for diagnosing scan range, step size, noise, background, and peak sampling.
 allowed-tools: Read, Bash
-arguments: pattern-path
 ---
 
 # Pattern QC
@@ -10,7 +9,7 @@ arguments: pattern-path
 Treat the input as immutable evidence. Run:
 
 ```bash
-python ${CLAUDE_SKILL_DIR}/scripts/pattern_qc.py "$ARGUMENTS"
+python ${AUTOXRD_SKILL_DIR}/scripts/pattern_qc.py "$ARGUMENTS"
 ```
 
 Then report a `PatternState` with: source path, column interpretation, point count,

@@ -25,21 +25,28 @@ Implemented:
 - Pattern QC and conservative peak detection
 - FullProf process runner and output parser
 - FullProf metrics: `Rp`, `Rwp`, `Rexp`, `Chi2`, Bragg R, fractions, convergence, runtime, warnings
-- Physics boundary validator for refined results
-- Typed skills for QC, staged refinement, residual diagnosis, and physical auditing
+- FullProf PCR semantic catalog, guarded early-stage codeword compiler, and direct PRF reader
+- Validated Le Bail initialization and immutable parent/child FullProf execution
+- Typed scientific contracts for evidence, actions, predictions, snapshots, and gate decisions
+- Evidence-gated refinement transitions with stage, bounds, coupling, and physical checks
+- Deterministic residual morphology and candidate-structure auditing
+- Append-only, hash-chained refinement trajectories with tamper detection
+- Nine XRD skills for QC, structure audit, guarded PCR compilation, Le Bail and Rietveld
+  refinement, residual analysis, gating, and final audit
 - FullProf, opXRD, Dara, SimXRD, and SIMPOD benchmark infrastructure
 
 In progress:
 
-- Typed PCR intermediate representation and validator
-- CIF-to-PCR generation
+- CIF-to-PCR synthesis and high-risk FullProf limit/restraint compilation
 - Fully autonomous staged refinement policy
 - Candidate phase retrieval and search-match
 - Multi-hypothesis phase identification
-- Trajectory-level policy evaluation and artifact recovery benchmarks
+- End-to-end trajectory policy and artifact recovery benchmark runner
 
-See [`proposal.md`](proposal.md) for the scientific motivation, novelty claims, benchmark
-design, baselines, ablations, and publication plan.
+See [`proposal.md`](proposal.md) for the original proposal and
+[`docs/research-design.md`](docs/research-design.md) for the implemented research abstraction,
+evaluation protocol, baselines, ablations, and skill-distillation plan. See
+[`docs/fullprof-pcr.md`](docs/fullprof-pcr.md) for the guarded PCR workflow and JSON contract.
 
 ## Repository Layout
 
@@ -54,7 +61,7 @@ AutoXRD/
 │   ├── features/             # Skills, memory, coordinator, plans, sandbox
 │   ├── tools/                # Read/write/edit/grep/bash/agent tools
 │   ├── tui/                  # Interactive terminal application
-│   └── xrd/                  # Pattern readers, QC, FullProf parser/runner
+│   └── xrd/                  # Schemas, gates, trajectory, residuals, structures, backends
 └── tests/                    # Unit and integration tests
 ```
 
@@ -194,18 +201,32 @@ AutoXRD discovers project skills from `.autoxrd/skills/` and user skills from
 | Skill | Purpose |
 |---|---|
 | `/xrd-pattern-qc` | Inspect range, step, noise, peaks, metadata, and artifacts |
+| `/xrd-structure-audit` | Parse, fingerprint, and audit a candidate CIF |
+| `/fullprof-le-bail` | Validate and run a FullProf Le Bail initialization |
+| `/fullprof-pcr-compiler` | Compile one typed action into guarded PCR codeword changes |
 | `/fullprof-staged-refinement` | Plan Le Bail and staged Rietveld refinement |
+| `/xrd-residual-features` | Extract deterministic observed-calculated residual features |
 | `/xrd-residual-diagnosis` | Map difference-pattern morphology to controlled tests |
+| `/xrd-trajectory-gate` | Test falsifiable predictions and accept or reject a transition |
 | `/xrd-physical-audit` | Reject unphysical fits and rank competing hypotheses |
 
 Examples inside the TUI:
 
 ```text
 /xrd-pattern-qc data/sample.xy
+/xrd-structure-audit structures/sample.cif
+/fullprof-le-bail templates/sample-le-bail.pcr data/sample.dat
+/fullprof-pcr-compiler runs/run_002/spec.json
 /fullprof-staged-refinement data/sample.xy structures/sample.cif
+/xrd-residual-features runs/run_004/residual.dat
 /xrd-residual-diagnosis runs/run_004
+/xrd-trajectory-gate runs/run_005/transition.json
 /xrd-physical-audit runs/run_010/metrics.json
 ```
+
+The core research abstraction is the Evidence-Gated Refinement Graph. Each action cites a
+machine-readable feature and predicts a minimum change before the numerical backend runs. The gate
+rejects a lower-Rwp result when that mechanism prediction fails or physical validity regresses.
 
 The staged-refinement skill requires each run to preserve an auditable trajectory:
 
@@ -275,6 +296,15 @@ Benchmark data and generated trajectories are intentionally excluded from Git. S
 [`benchmarks/README.md`](benchmarks/README.md) for dataset sources, sizes, limitations, and
 interpretation.
 
+The repository includes **AutoXRD-Bench-100**, a fixed 100-case evaluation spanning typed action
+safety, evidence-gated trajectory decisions, controlled artifact diagnosis, IUCr QPA, and Dara
+experimental phase identification:
+
+```bash
+.venv/bin/python benchmarks/autoxrd_bench.py validate
+.venv/bin/python benchmarks/autoxrd_bench.py materialize
+```
+
 ### FullProf official examples
 
 ```bash
@@ -310,17 +340,18 @@ Run the full AutoXRD suite:
 ```bash
 .venv/bin/python -m compileall -q src .autoxrd/skills
 .venv/bin/pip check
-.venv/bin/pytest -q
+.venv/bin/pytest -q --ignore=tests/test_sandbox_integration.py
 ```
 
-At the time of this revision:
+In the prepared environment, all non-platform tests pass:
 
 ```text
-329 passed, 9 skipped
+358 passed
 ```
 
-The skipped tests require platform-specific sandbox capabilities and are reported explicitly by
-pytest.
+The separate sandbox integration suite requires permission to create Linux namespaces. In restricted
+containers, `bwrap` can fail with `RTM_NEWADDR: Operation not permitted`; this does not affect XRD
+analysis but must be tested on the intended deployment host.
 
 ## Data and Configuration Paths
 

@@ -1,0 +1,27 @@
+{
+  "benchmark_id": "autoxrd-bench-100-v1",
+  "case_count": 100,
+  "family_counts": {
+    "action_contract": 10,
+    "dara_phase_identification": 10,
+    "iucr_qpa": 20,
+    "residual_diagnosis": 40,
+    "trajectory_gate": 20
+  },
+  "oracle_policy": "Exact truth for controlled cases; published weighed/reference labels for experimental cases.",
+  "primary_metrics": [
+    "macro_score",
+    "physical_gate_error_rate",
+    "diagnosis_accuracy"
+  ],
+  "sources": {
+    "controlled": "Generated deterministically by src/xrd/benchmark.py",
+    "dara": "https://github.com/CederGroupHub/dara",
+    "iucr_qarr": "https://www.iucr.org/__data/iucr/powder/QARR/data-kit.htm",
+    "iucr_reference": "https://www.iucr.org/__data/iucr/powder/QARR/results.htm"
+  },
+  "splits": {
+    "controlled": 70,
+    "experimental": 30
+  }
+}

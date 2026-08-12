@@ -19,6 +19,7 @@ _BRAGG_RE = re.compile(
     r"(?:Fract\(%\):\s*([\d.Ee+-]+))?"
 )
 _GLOBAL_CHI_RE = re.compile(r"Global user-weigthed Chi2 \(Bragg contrib\.\):\s*([\d.Ee+-]+)")
+_SAFE_CASE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
 @dataclass(frozen=True)
@@ -99,7 +100,7 @@ def parse_fullprof_output(case: str, workdir: Path, returncode: int, runtime: fl
 
     artifacts = {
         suffix: str(workdir / f"{case}.{suffix}")
-        for suffix in ("pcr", "out", "sum", "prf", "log", "hkl")
+        for suffix in ("pcr", "new", "out", "sum", "prf", "log", "hkl")
         if (workdir / f"{case}.{suffix}").exists()
     }
     converged = "convergence reached" in combined
@@ -141,6 +142,51 @@ def run_fullprof_case(
             text=True,
             timeout=timeout,
             errors="replace",
+        )
+        returncode = completed.returncode
+        (workdir / "runner.stdout").write_text(completed.stdout, encoding="utf-8")
+        (workdir / "runner.stderr").write_text(completed.stderr, encoding="utf-8")
+    except subprocess.TimeoutExpired as exc:
+        returncode = 124
+        (workdir / "runner.stderr").write_text(str(exc), encoding="utf-8")
+
+    metrics = parse_fullprof_output(case, workdir, returncode, time.monotonic() - started)
+    (workdir / "metrics.json").write_text(json.dumps(metrics.to_dict(), indent=2), encoding="utf-8")
+    return metrics
+
+
+def run_fullprof_template(
+    executable: Path,
+    template: Path,
+    pattern: Path,
+    results_dir: Path,
+    case: str,
+    timeout: float = 120.0,
+    auxiliary_files: dict[str, Path] | None = None,
+) -> FullProfMetrics:
+    """Run a specific PCR and pattern without copying an entire example directory."""
+    if not _SAFE_CASE_RE.fullmatch(case) or case in {".", ".."}:
+        raise ValueError("case must be a safe filename of at most 128 characters")
+    if not template.is_file() or not pattern.is_file():
+        raise FileNotFoundError("FullProf template and pattern must be regular files")
+    workdir = results_dir / case
+    if workdir.exists() and any(workdir.iterdir()):
+        raise FileExistsError(f"refusing to overwrite non-empty run directory: {workdir}")
+    workdir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(template, workdir / f"{case}.pcr")
+    shutil.copy2(pattern, workdir / f"{case}.dat")
+    for name, source in (auxiliary_files or {}).items():
+        if Path(name).name != name or name in {".", ".."}:
+            raise ValueError(f"unsafe auxiliary filename: {name}")
+        if not source.is_file():
+            raise FileNotFoundError(f"FullProf auxiliary file does not exist: {source}")
+        shutil.copy2(source, workdir / name)
+
+    started = time.monotonic()
+    try:
+        completed = subprocess.run(
+            [str(executable), case, case, case], cwd=workdir, capture_output=True,
+            text=True, timeout=timeout, errors="replace",
         )
         returncode = completed.returncode
         (workdir / "runner.stdout").write_text(completed.stdout, encoding="utf-8")

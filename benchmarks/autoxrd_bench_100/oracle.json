@@ -1,0 +1,631 @@
+{
+  "answers": {
+    "contract-001": {
+      "valid": true,
+      "violations": []
+    },
+    "contract-002": {
+      "valid": true,
+      "violations": []
+    },
+    "contract-003": {
+      "valid": false,
+      "violations": [
+        "action_not_allowed_in_stage"
+      ]
+    },
+    "contract-004": {
+      "valid": false,
+      "violations": [
+        "high_risk_action_requires_bounds"
+      ]
+    },
+    "contract-005": {
+      "valid": true,
+      "violations": []
+    },
+    "contract-006": {
+      "valid": false,
+      "violations": [
+        "occupancy_and_biso_cannot_be_released_together"
+      ]
+    },
+    "contract-007": {
+      "valid": false,
+      "violations": [
+        "zero_and_cell_or_wavelength_cannot_be_released_together"
+      ]
+    },
+    "contract-008": {
+      "valid": true,
+      "violations": []
+    },
+    "contract-009": {
+      "valid": true,
+      "violations": []
+    },
+    "contract-010": {
+      "valid": false,
+      "violations": [
+        "action_not_allowed_in_stage"
+      ]
+    },
+    "dara-001": {
+      "fully_indexed": false,
+      "phases": [
+        "Bi2O3",
+        "Nb2O5",
+        "unknown"
+      ]
+    },
+    "dara-002": {
+      "fully_indexed": true,
+      "phases": [
+        "Bi2O3",
+        "MoO3",
+        "Bi2Mo3O12"
+      ]
+    },
+    "dara-003": {
+      "fully_indexed": true,
+      "phases": [
+        "Bi2O3",
+        "V2O5",
+        "VBiO4"
+      ]
+    },
+    "dara-004": {
+      "fully_indexed": false,
+      "phases": [
+        "CaCO3",
+        "unknown"
+      ]
+    },
+    "dara-005": {
+      "fully_indexed": true,
+      "phases": [
+        "CoWO4",
+        "WO3"
+      ]
+    },
+    "dara-006": {
+      "fully_indexed": true,
+      "phases": [
+        "ZnO",
+        "Co3O4"
+      ]
+    },
+    "dara-007": {
+      "fully_indexed": true,
+      "phases": [
+        "MnCr2O4"
+      ]
+    },
+    "dara-008": {
+      "fully_indexed": false,
+      "phases": [
+        "CrPbO4",
+        "Pb2CrO5",
+        "unknown"
+      ]
+    },
+    "dara-009": {
+      "fully_indexed": true,
+      "phases": [
+        "ZnCr2O4",
+        "ZnO"
+      ]
+    },
+    "dara-010": {
+      "fully_indexed": true,
+      "phases": [
+        "V2O5",
+        "Cr2O3"
+      ]
+    },
+    "gate-001": {
+      "accepted": true,
+      "reasons": []
+    },
+    "gate-002": {
+      "accepted": true,
+      "reasons": []
+    },
+    "gate-003": {
+      "accepted": true,
+      "reasons": []
+    },
+    "gate-004": {
+      "accepted": true,
+      "reasons": []
+    },
+    "gate-005": {
+      "accepted": true,
+      "reasons": []
+    },
+    "gate-006": {
+      "accepted": false,
+      "reasons": [
+        "falsifiable_prediction_not_satisfied"
+      ]
+    },
+    "gate-007": {
+      "accepted": false,
+      "reasons": [
+        "falsifiable_prediction_not_satisfied"
+      ]
+    },
+    "gate-008": {
+      "accepted": false,
+      "reasons": [
+        "falsifiable_prediction_not_satisfied"
+      ]
+    },
+    "gate-009": {
+      "accepted": false,
+      "reasons": [
+        "rwp_regressed_beyond_budget"
+      ]
+    },
+    "gate-010": {
+      "accepted": false,
+      "reasons": [
+        "rwp_regressed_beyond_budget"
+      ]
+    },
+    "gate-011": {
+      "accepted": false,
+      "reasons": [
+        "rwp_regressed_beyond_budget"
+      ]
+    },
+    "gate-012": {
+      "accepted": false,
+      "reasons": [
+        "new_physical_violation:negative_biso",
+        "no_multi_objective_utility_gain"
+      ]
+    },
+    "gate-013": {
+      "accepted": false,
+      "reasons": [
+        "new_physical_violation:occupancy_sum",
+        "no_multi_objective_utility_gain"
+      ]
+    },
+    "gate-014": {
+      "accepted": false,
+      "reasons": [
+        "no_multi_objective_utility_gain",
+        "severe_parameter_correlation"
+      ]
+    },
+    "gate-015": {
+      "accepted": false,
+      "reasons": [
+        "unexplained_peaks_regressed_beyond_budget"
+      ]
+    },
+    "gate-016": {
+      "accepted": false,
+      "reasons": [
+        "action_not_allowed_in_stage"
+      ]
+    },
+    "gate-017": {
+      "accepted": false,
+      "reasons": [
+        "high_risk_action_requires_bounds"
+      ]
+    },
+    "gate-018": {
+      "accepted": false,
+      "reasons": [
+        "zero_and_cell_or_wavelength_cannot_be_released_together"
+      ]
+    },
+    "gate-019": {
+      "accepted": false,
+      "reasons": [
+        "occupancy_and_biso_cannot_be_released_together"
+      ]
+    },
+    "gate-020": {
+      "accepted": false,
+      "reasons": [
+        "no_multi_objective_utility_gain"
+      ]
+    },
+    "iucr-001": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.0115,
+        "fluorite": 0.9481,
+        "zincite": 0.0404
+      }
+    },
+    "iucr-002": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.9431,
+        "fluorite": 0.0433,
+        "zincite": 0.0136
+      }
+    },
+    "iucr-003": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.0504,
+        "fluorite": 0.0136,
+        "zincite": 0.9359
+      }
+    },
+    "iucr-004": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.1353,
+        "fluorite": 0.5358,
+        "zincite": 0.3289
+      }
+    },
+    "iucr-005": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.5512,
+        "fluorite": 0.2962,
+        "zincite": 0.1525
+      }
+    },
+    "iucr-006": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.2706,
+        "fluorite": 0.1772,
+        "zincite": 0.5522
+      }
+    },
+    "iucr-007": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.3137,
+        "fluorite": 0.3442,
+        "zincite": 0.3421
+      }
+    },
+    "iucr-008": {
+      "artifact": "none",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite"
+      ],
+      "weight_fractions": {
+        "corundum": 0.3512,
+        "fluorite": 0.3469,
+        "zincite": 0.3019
+      }
+    },
+    "iucr-009": {
+      "artifact": "preferred_orientation",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite",
+        "brucite"
+      ],
+      "weight_fractions": {
+        "brucite": 0.3626,
+        "corundum": 0.2127,
+        "fluorite": 0.2253,
+        "zincite": 0.1994
+      }
+    },
+    "iucr-010": {
+      "artifact": "amorphous_content",
+      "phases": [
+        "corundum",
+        "zincite",
+        "fluorite",
+        "glass"
+      ],
+      "weight_fractions": {
+        "corundum": 0.3079,
+        "fluorite": 0.2006,
+        "glass": 0.2947,
+        "zincite": 0.1968
+      }
+    },
+    "iucr-011": {
+      "artifact": "microabsorption",
+      "phases": [
+        "corundum",
+        "magnetite",
+        "zircon"
+      ],
+      "weight_fractions": {
+        "corundum": 0.5046,
+        "magnetite": 0.1964,
+        "zircon": 0.299
+      }
+    },
+    "iucr-012": {
+      "artifact": "complex_mixture",
+      "phases": [
+        "quartz",
+        "boehmite",
+        "anatase",
+        "goethite",
+        "kaolinite",
+        "gibbsite",
+        "hematite"
+      ],
+      "weight_fractions": {
+        "anatase": 0.02,
+        "boehmite": 0.1493,
+        "gibbsite": 0.549,
+        "goethite": 0.0998,
+        "hematite": 0.1,
+        "kaolinite": 0.0302,
+        "quartz": 0.0516
+      }
+    },
+    "iucr-013": {
+      "artifact": "natural_sample",
+      "phases": [
+        "quartz",
+        "feldspar",
+        "albite",
+        "biotite",
+        "clinochlore",
+        "hornblende",
+        "zircon"
+      ]
+    },
+    "iucr-014": {
+      "artifact": "pharmaceutical_mixture",
+      "phases": [
+        "mannitol",
+        "sucrose",
+        "dl-valine",
+        "starch",
+        "nizatidine"
+      ]
+    },
+    "iucr-015": {
+      "artifact": "pharmaceutical_mixture",
+      "phases": [
+        "mannitol",
+        "sucrose",
+        "dl-valine",
+        "starch",
+        "nizatidine"
+      ]
+    },
+    "iucr-016": {
+      "artifact": "none",
+      "phases": [
+        "corundum"
+      ]
+    },
+    "iucr-017": {
+      "artifact": "none",
+      "phases": [
+        "fluorite"
+      ]
+    },
+    "iucr-018": {
+      "artifact": "none",
+      "phases": [
+        "zincite"
+      ]
+    },
+    "iucr-019": {
+      "artifact": "preferred_orientation_reference",
+      "phases": [
+        "brucite"
+      ]
+    },
+    "iucr-020": {
+      "artifact": "microabsorption_reference",
+      "phases": [
+        "magnetite"
+      ]
+    },
+    "residual-01-01": {
+      "action": "refine_zero",
+      "diagnosis": "zero_shift"
+    },
+    "residual-01-02": {
+      "action": "refine_background",
+      "diagnosis": "background_curvature"
+    },
+    "residual-01-03": {
+      "action": "refine_profile",
+      "diagnosis": "peak_broadening"
+    },
+    "residual-01-04": {
+      "action": "refine_asymmetry",
+      "diagnosis": "low_angle_asymmetry"
+    },
+    "residual-01-05": {
+      "action": "add_phase",
+      "diagnosis": "impurity_peaks"
+    },
+    "residual-01-06": {
+      "action": "refine_preferred_orientation",
+      "diagnosis": "preferred_orientation"
+    },
+    "residual-01-07": {
+      "action": "request_broader_2theta_range",
+      "diagnosis": "limited_range"
+    },
+    "residual-01-08": {
+      "action": "reacquire_higher_counts",
+      "diagnosis": "high_noise"
+    },
+    "residual-02-01": {
+      "action": "refine_zero",
+      "diagnosis": "zero_shift"
+    },
+    "residual-02-02": {
+      "action": "refine_background",
+      "diagnosis": "background_curvature"
+    },
+    "residual-02-03": {
+      "action": "refine_profile",
+      "diagnosis": "peak_broadening"
+    },
+    "residual-02-04": {
+      "action": "refine_asymmetry",
+      "diagnosis": "low_angle_asymmetry"
+    },
+    "residual-02-05": {
+      "action": "add_phase",
+      "diagnosis": "impurity_peaks"
+    },
+    "residual-02-06": {
+      "action": "refine_preferred_orientation",
+      "diagnosis": "preferred_orientation"
+    },
+    "residual-02-07": {
+      "action": "request_broader_2theta_range",
+      "diagnosis": "limited_range"
+    },
+    "residual-02-08": {
+      "action": "reacquire_higher_counts",
+      "diagnosis": "high_noise"
+    },
+    "residual-03-01": {
+      "action": "refine_zero",
+      "diagnosis": "zero_shift"
+    },
+    "residual-03-02": {
+      "action": "refine_background",
+      "diagnosis": "background_curvature"
+    },
+    "residual-03-03": {
+      "action": "refine_profile",
+      "diagnosis": "peak_broadening"
+    },
+    "residual-03-04": {
+      "action": "refine_asymmetry",
+      "diagnosis": "low_angle_asymmetry"
+    },
+    "residual-03-05": {
+      "action": "add_phase",
+      "diagnosis": "impurity_peaks"
+    },
+    "residual-03-06": {
+      "action": "refine_preferred_orientation",
+      "diagnosis": "preferred_orientation"
+    },
+    "residual-03-07": {
+      "action": "request_broader_2theta_range",
+      "diagnosis": "limited_range"
+    },
+    "residual-03-08": {
+      "action": "reacquire_higher_counts",
+      "diagnosis": "high_noise"
+    },
+    "residual-04-01": {
+      "action": "refine_zero",
+      "diagnosis": "zero_shift"
+    },
+    "residual-04-02": {
+      "action": "refine_background",
+      "diagnosis": "background_curvature"
+    },
+    "residual-04-03": {
+      "action": "refine_profile",
+      "diagnosis": "peak_broadening"
+    },
+    "residual-04-04": {
+      "action": "refine_asymmetry",
+      "diagnosis": "low_angle_asymmetry"
+    },
+    "residual-04-05": {
+      "action": "add_phase",
+      "diagnosis": "impurity_peaks"
+    },
+    "residual-04-06": {
+      "action": "refine_preferred_orientation",
+      "diagnosis": "preferred_orientation"
+    },
+    "residual-04-07": {
+      "action": "request_broader_2theta_range",
+      "diagnosis": "limited_range"
+    },
+    "residual-04-08": {
+      "action": "reacquire_higher_counts",
+      "diagnosis": "high_noise"
+    },
+    "residual-05-01": {
+      "action": "refine_zero",
+      "diagnosis": "zero_shift"
+    },
+    "residual-05-02": {
+      "action": "refine_background",
+      "diagnosis": "background_curvature"
+    },
+    "residual-05-03": {
+      "action": "refine_profile",
+      "diagnosis": "peak_broadening"
+    },
+    "residual-05-04": {
+      "action": "refine_asymmetry",
+      "diagnosis": "low_angle_asymmetry"
+    },
+    "residual-05-05": {
+      "action": "add_phase",
+      "diagnosis": "impurity_peaks"
+    },
+    "residual-05-06": {
+      "action": "refine_preferred_orientation",
+      "diagnosis": "preferred_orientation"
+    },
+    "residual-05-07": {
+      "action": "request_broader_2theta_range",
+      "diagnosis": "limited_range"
+    },
+    "residual-05-08": {
+      "action": "reacquire_higher_counts",
+      "diagnosis": "high_noise"
+    }
+  },
+  "benchmark_id": "autoxrd-bench-100-v1"
+}

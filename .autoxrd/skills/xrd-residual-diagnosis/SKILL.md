@@ -2,7 +2,6 @@
 name: xrd-residual-diagnosis
 description: Diagnose observed-calculated-difference residual morphology and select the next constrained XRD refinement action. Use when a FullProf fit stalls, misfits peaks, leaves unexplained reflections, or improves Rwp for unclear reasons.
 allowed-tools: Read, Bash
-arguments: run-directory
 ---
 
 # Residual-Driven Diagnosis

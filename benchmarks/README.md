@@ -4,6 +4,23 @@ This directory converts the benchmark proposal into reproducible, backend-level 
 Downloaded corpora and generated trajectories are ignored by Git; manifests and runners are
 versioned.
 
+## AutoXRD-Bench-100
+
+The compact agent benchmark is checked in under
+[`autoxrd_bench_100/`](autoxrd_bench_100/README.md). It contains exactly 100 cases: 30 typed
+action/trajectory decisions, 40 controlled residual diagnoses, 20 IUCr quantitative phase-analysis
+cases, and 10 Dara experimental phase-identification cases.
+
+```bash
+.venv/bin/python benchmarks/autoxrd_bench.py validate
+.venv/bin/python benchmarks/autoxrd_bench.py materialize
+.venv/bin/python benchmarks/autoxrd_bench.py baseline benchmarks/results/autoxrd-bench-baseline.jsonl
+.venv/bin/python benchmarks/autoxrd_bench.py score benchmarks/results/autoxrd-bench-baseline.jsonl
+```
+
+Public questions and the evaluator oracle are separate files. Keep the oracle outside the agent
+sandbox for blind evaluation. Generated/downloaded diffraction patterns remain ignored by Git.
+
 ## Current Suites
 
 ### FullProf official examples
@@ -21,6 +38,21 @@ Bragg R, phase fractions, convergence, runtime, warnings, and artifacts.
 
 Current backend result: 8/8 valid executions and 8/8 convergence. This measures the FullProf
 runner/parser baseline, not autonomous phase identification.
+
+### Guarded Le Bail workflow
+
+Run a zero-parameter initialization followed by one typed low-order background action:
+
+```bash
+.venv/bin/python benchmarks/run_le_bail_workflow.py --results benchmarks/results/le_bail_run_001
+```
+
+The runner validates the official first-run controls, preserves separate immutable run directories,
+copies the generated HKL into the child run, and records the typed action and compilation report. It
+also parses both PRFs and applies the evidence gate. In the current Tb2BaCoO5 smoke run, initialization
+finishes with FullProf Rwp 17.4. Releasing background `b0,b1` reduces the targeted absolute low-angle
+bias from 0.01138 to 0.00599, but raises Rwp to 17.6 and worsens aggregate residual utility. The gate
+therefore records a mechanism-supported but rejected edge.
 
 ### Experimental pattern QC
 

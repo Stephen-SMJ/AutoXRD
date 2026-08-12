@@ -29,6 +29,7 @@ CLAUDE.md
 
 # Downloaded benchmark corpora and generated refinement trajectories
 benchmarks/data/
+benchmarks/**/data/
 benchmarks/results/
 
 

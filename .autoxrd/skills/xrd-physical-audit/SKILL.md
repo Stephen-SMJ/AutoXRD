@@ -2,7 +2,6 @@
 name: xrd-physical-audit
 description: Audit refined XRD structures and rank multiple phase hypotheses using fit quality, residual evidence, chemistry, uncertainty, and parameter stability. Use before accepting or reporting any Rietveld result.
 allowed-tools: Read, Bash
-arguments: result-json
 ---
 
 # Physical Audit and Hypothesis Ranking
@@ -10,7 +9,7 @@ arguments: result-json
 Run the deterministic boundary checks when a JSON result is available:
 
 ```bash
-python ${CLAUDE_SKILL_DIR}/scripts/validate_result.py "$ARGUMENTS"
+python ${AUTOXRD_SKILL_DIR}/scripts/validate_result.py "$ARGUMENTS"
 ```
 
 Reject hard failures: non-finite metrics, negative phase fractions, invalid occupancy,

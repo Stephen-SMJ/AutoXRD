@@ -20,12 +20,18 @@ def test_project_xrd_skills_are_discoverable():
     assert {
         "xrd-pattern-qc",
         "fullprof-staged-refinement",
+        "fullprof-pcr-compiler",
+        "fullprof-le-bail",
         "xrd-residual-diagnosis",
         "xrd-physical-audit",
+        "xrd-residual-features",
+        "xrd-structure-audit",
+        "xrd-trajectory-gate",
     } <= names
     prompt = get_skill("xrd-pattern-qc").get_prompt("scan.xy")
     assert "scan.xy" in prompt
     assert "AUTOXRD_SKILL_DIR" not in prompt
+    assert "CLAUDE_SKILL_DIR" not in prompt
 
 
 def test_pattern_qc_script_emits_pattern_state(tmp_path: Path):

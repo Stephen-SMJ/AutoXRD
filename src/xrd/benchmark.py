@@ -13,7 +13,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Iterable
 
-from .pattern import read_xrdml
+from .pattern import analyze_pattern, read_pattern, read_xrdml
 from .schemas import (
     ActionKind,
     Evidence,
@@ -352,6 +352,44 @@ def load_suite(root: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     oracle = oracle_doc["answers"]
     validate_suite(cases, oracle)
     return cases, oracle
+
+
+def validate_data(root: Path) -> dict[str, Any]:
+    """Require every file-backed case to exist and parse as a diffraction pattern."""
+    cases, _ = load_suite(root)
+    inline = 0
+    parsed: dict[str, int] = Counter()
+    point_counts: list[int] = []
+    failures: list[str] = []
+    for case in cases:
+        relative = case["input"].get("pattern")
+        if relative is None:
+            inline += 1
+            continue
+        path = root / relative
+        if not path.is_file():
+            failures.append(f"{case['id']}:missing:{relative}")
+            continue
+        try:
+            qc = analyze_pattern(read_pattern(path))
+        except Exception as exc:
+            failures.append(f"{case['id']}:invalid:{exc}")
+            continue
+        parsed[case["family"]] += 1
+        point_counts.append(qc.point_count)
+    if failures:
+        preview = "; ".join(failures[:10])
+        raise ValueError(f"benchmark data are not ready ({len(failures)} failures): {preview}")
+    return {
+        "benchmark_id": BENCHMARK_ID,
+        "case_count": len(cases),
+        "inline_cases": inline,
+        "pattern_cases_ready": sum(parsed.values()),
+        "pattern_cases_by_family": dict(parsed),
+        "minimum_points": min(point_counts),
+        "maximum_points": max(point_counts),
+        "ready": inline + sum(parsed.values()) == len(cases),
+    }
 
 
 def _gaussian(x: float, center: float, sigma: float) -> float:

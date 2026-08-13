@@ -104,12 +104,43 @@ def read_text_pattern(path: Path) -> Pattern:
     return Pattern(angles, intensities)
 
 
+def read_cpi(path: Path) -> Pattern:
+    """Read the historical Sietronics CPI column format used by IUCr QARR."""
+    lines = path.read_text(encoding="ascii", errors="replace").splitlines()
+    if len(lines) < 11 or lines[0].strip().upper() != "SIETRONICS XRD SCAN":
+        raise ValueError("CPI file lacks the Sietronics scan header")
+    try:
+        start = float(lines[1].strip())
+        end = float(lines[2].strip())
+        step = float(lines[3].strip())
+        wavelength = float(lines[5].strip())
+        marker = next(index for index, line in enumerate(lines) if line.strip().upper() == "SCANDATA")
+        intensities = [float(token) for line in lines[marker + 1:] for token in line.split()]
+    except (StopIteration, ValueError) as exc:
+        raise ValueError("CPI file contains an invalid scan header or intensity value") from exc
+    expected = int(round((end - start) / step)) + 1
+    if step <= 0 or expected < 3 or len(intensities) != expected:
+        raise ValueError(
+            f"CPI scan length mismatch: header expects {expected}, found {len(intensities)}"
+        )
+    angles = [start + index * step for index in range(expected)]
+    return Pattern(
+        angles,
+        intensities,
+        wavelength=wavelength,
+        radiation=lines[4].strip() or "unknown",
+        metadata={"format": "sietronics_cpi", "sample": lines[8].strip()},
+    )
+
+
 def read_pattern(path: Path) -> Pattern:
     suffix = path.suffix.lower()
     if suffix == ".json":
         return read_json_pattern(json.loads(path.read_text(encoding="utf-8")))
     if suffix == ".xrdml":
         return read_xrdml(path)
+    if suffix == ".cpi":
+        return read_cpi(path)
     return read_text_pattern(path)
 
 

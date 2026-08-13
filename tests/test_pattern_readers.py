@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from xrd.pattern import analyze_pattern, read_json_pattern, read_xrdml
+import pytest
+
+from xrd.pattern import analyze_pattern, read_cpi, read_json_pattern, read_pattern, read_xrdml
 
 
 def test_read_opxrd_json():
@@ -30,3 +32,28 @@ def test_read_xrdml(tmp_path: Path):
     pattern = read_xrdml(path)
     assert pattern.two_theta == [10.0, 10.1, 10.2, 10.3, 10.4]
     assert pattern.radiation == "Cu"
+
+
+def test_read_sietronics_cpi(tmp_path: Path):
+    path = tmp_path / "sample.cpi"
+    path.write_text(
+        "SIETRONICS XRD SCAN\n10.0\n10.04\n0.02\nCu\n1.54056\n"
+        "13-8-2026\n1\nReference sample\nSCANDATA\n100\n250\n120\n",
+        encoding="ascii",
+    )
+    pattern = read_pattern(path)
+    assert pattern.two_theta == pytest.approx([10.0, 10.02, 10.04])
+    assert pattern.intensity == [100.0, 250.0, 120.0]
+    assert pattern.wavelength == 1.54056
+    assert pattern.metadata["format"] == "sietronics_cpi"
+
+
+def test_cpi_rejects_scan_length_mismatch(tmp_path: Path):
+    path = tmp_path / "broken.cpi"
+    path.write_text(
+        "SIETRONICS XRD SCAN\n10.0\n10.04\n0.02\nCu\n1.54056\n"
+        "13-8-2026\n1\nReference sample\nSCANDATA\n100\n",
+        encoding="ascii",
+    )
+    with pytest.raises(ValueError, match="scan length mismatch"):
+        read_cpi(path)

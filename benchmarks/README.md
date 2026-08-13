@@ -14,6 +14,8 @@ cases, and 10 Dara experimental phase-identification cases.
 ```bash
 .venv/bin/python benchmarks/autoxrd_bench.py validate
 .venv/bin/python benchmarks/autoxrd_bench.py materialize
+.venv/bin/python benchmarks/download_iucr_qarr.py
+.venv/bin/python benchmarks/autoxrd_bench.py check-data
 .venv/bin/python benchmarks/autoxrd_bench.py baseline benchmarks/results/autoxrd-bench-baseline.jsonl
 .venv/bin/python benchmarks/autoxrd_bench.py score benchmarks/results/autoxrd-bench-baseline.jsonl
 ```

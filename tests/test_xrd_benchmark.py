@@ -9,6 +9,7 @@ from xrd.benchmark import (
     load_suite,
     materialize_data,
     score_predictions,
+    validate_data,
     write_baseline,
     write_suite,
 )
@@ -31,6 +32,12 @@ def test_write_load_and_materialize_controlled_patterns(tmp_path: Path) -> None:
     paths = [tmp_path / case["input"]["pattern"] for case in cases
              if case["family"] == "residual_diagnosis"]
     assert all(path.stat().st_size > 1000 for path in paths)
+
+
+def test_data_validation_rejects_unmaterialized_suite(tmp_path: Path) -> None:
+    write_suite(tmp_path)
+    with pytest.raises(ValueError, match="data are not ready"):
+        validate_data(tmp_path)
 
 
 def test_oracle_submission_scores_one(tmp_path: Path) -> None:

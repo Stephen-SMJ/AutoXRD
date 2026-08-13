@@ -11,6 +11,7 @@ from xrd.benchmark import (
     load_suite,
     materialize_data,
     score_predictions,
+    validate_data,
     validate_suite,
     write_baseline,
     write_suite,
@@ -26,6 +27,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("build", help="write the deterministic public cases and oracle")
     subparsers.add_parser("validate", help="validate ids, schemas, and family counts")
+    subparsers.add_parser("check-data", help="require every file-backed case to exist and parse")
     materialize = subparsers.add_parser("materialize", help="generate local pattern artifacts")
     materialize.add_argument("--dara-source", type=Path)
     materialize.add_argument("--download-iucr", action="store_true")
@@ -41,6 +43,8 @@ def main() -> None:
     elif args.command == "validate":
         cases, oracle = load_suite(args.root)
         result = validate_suite(cases, oracle)
+    elif args.command == "check-data":
+        result = validate_data(args.root)
     elif args.command == "materialize":
         result = materialize_data(args.root, args.dara_source, args.download_iucr)
     elif args.command == "baseline":

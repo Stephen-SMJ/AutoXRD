@@ -43,15 +43,23 @@ From the repository root:
 files to two-column text. It reports each source as `ready` or `missing` instead of silently
 substituting synthetic data.
 
-IUCr currently applies an anti-bot response to some non-browser downloads. Existing CPI files can
-be placed directly under `data/iucr/`, or a download can be attempted with:
+IUCr applies a JavaScript challenge to non-browser downloads. Install the browser once, then run
+the supplied downloader. It pins the official archive SHA-256 and extracts only the 20 required
+files:
 
 ```bash
-.venv/bin/python benchmarks/autoxrd_bench.py materialize --download-iucr
+.venv/bin/pip install playwright
+.venv/bin/playwright install chromium
+.venv/bin/python benchmarks/download_iucr_qarr.py
+.venv/bin/python benchmarks/autoxrd_bench.py materialize
+.venv/bin/python benchmarks/autoxrd_bench.py check-data
 ```
 
-Failures are returned per case and do not alter the oracle. Public case records retain each
-canonical source URL.
+On a headless Linux host the downloader also requires the `xvfb` system package. Direct download is
+tried first; Playwright is used only when the challenge is present. The expected archive SHA-256 is
+`5205385b58af5b81685cf1466d5d054ae42c056252c50f97eaed8737337b4197`.
+`check-data` is the final hard gate: it succeeds only when all 30 inline cases and all 70
+file-backed cases are present and parseable.
 
 ## Submission And Scoring
 

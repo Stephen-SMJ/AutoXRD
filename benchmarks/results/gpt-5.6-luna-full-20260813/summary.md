@@ -1,5 +1,11 @@
 # AutoXRD-Bench-100: gpt-5.6-luna Report
 
+> **INVALIDATED (2026-08-13): DO NOT CITE THESE SCORES.** The benchmark runner created a fresh
+> working directory but did not confine filesystem tools to it. The evaluated agent accessed the
+> oracle, benchmark generator/reference data, and deterministic reference implementations during
+> multiple cases. Consequently, the reported 89/100 is contaminated and is not a valid estimate of
+> model or agent capability. This file is retained only as an audit artifact.
+
 ## Run Configuration
 
 - Benchmark: `autoxrd-bench-100-v1`
@@ -9,8 +15,8 @@
 - Effort: `high`
 - Maximum output tokens: 8192
 - Parallel workers: 4
-- Agent isolation: fresh session and workspace for every case
-- Oracle exposure: none
+- Agent isolation: fresh session and workspace for every case, but no effective filesystem confinement
+- Oracle exposure: confirmed in execution traces; this invalidates the score
 - Final valid responses: 100/100
 - First-pass technical failures: 2; only those two cases were retried
 

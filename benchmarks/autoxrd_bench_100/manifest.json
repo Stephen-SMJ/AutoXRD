@@ -1,27 +1,42 @@
 {
-  "benchmark_id": "autoxrd-bench-100-v1",
+  "benchmark_id": "autoxrd-bench-100-v2",
   "case_count": 100,
+  "difficulty_counts": {
+    "easy": 30,
+    "hard": 30,
+    "medium": 40
+  },
   "family_counts": {
-    "action_contract": 10,
-    "dara_phase_identification": 10,
-    "iucr_qpa": 20,
-    "residual_diagnosis": 40,
-    "trajectory_gate": 20
+    "easy_action_reasoning": 10,
+    "easy_gate_reasoning": 10,
+    "easy_residual_reasoning": 10,
+    "hard_metric_recovery": 10,
+    "hard_phase_identification": 10,
+    "hard_qpa": 10,
+    "medium_experimental_report": 10,
+    "medium_residual_report": 20,
+    "medium_trajectory_report": 10
   },
-  "oracle_policy": "Exact truth for controlled cases; published weighed/reference labels for experimental cases.",
-  "primary_metrics": [
-    "macro_score",
-    "physical_gate_error_rate",
-    "diagnosis_accuracy"
-  ],
+  "hard_normalization": {
+    "higher_is_better": "clip((metric-baseline)/(oracle-baseline),0,1)",
+    "lower_is_better": "clip((baseline-metric)/(baseline-oracle),0,1)",
+    "policy": "oracle and baseline are frozen; never normalize against participating models"
+  },
+  "judge_policy": {
+    "aggregation": "median per dimension",
+    "hard_explanation_weight": "0.20-0.25",
+    "medium_weight": 1.0,
+    "repeats": 3
+  },
+  "overall_weights": {
+    "easy": 0.3,
+    "hard": 0.3,
+    "medium": 0.4
+  },
   "sources": {
-    "controlled": "Generated deterministically by src/xrd/benchmark.py",
+    "controlled": "Deterministic AutoXRD v2 generators",
     "dara": "https://github.com/CederGroupHub/dara",
-    "iucr_qarr": "https://www.iucr.org/__data/iucr/powder/QARR/data-kit.htm",
-    "iucr_reference": "https://www.iucr.org/__data/iucr/powder/QARR/results.htm"
-  },
-  "splits": {
-    "controlled": 70,
-    "experimental": 30
+    "iucr_qarr_data": "https://www.iucr.org/__data/iucr/powder/QARR/data-kit.htm",
+    "iucr_qarr_results": "https://www.iucr.org/__data/iucr/powder/QARR/results.htm"
   }
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build, materialize, validate, and score AutoXRD-Bench-100."""
+"""Build, materialize, validate, and score tiered AutoXRD-Bench-100 v2."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from xrd.benchmark import (
+from xrd.benchmark_v2 import (
     load_suite,
     materialize_data,
     score_predictions,
@@ -34,6 +34,8 @@ def main() -> None:
     score = subparsers.add_parser("score", help="score a JSONL submission")
     score.add_argument("predictions", type=Path)
     score.add_argument("--output", type=Path)
+    score.add_argument("--judgments", type=Path,
+                       help="JSONL judgments produced by judge_benchmark.py")
     baseline = subparsers.add_parser("baseline", help="write a format and scoring smoke baseline")
     baseline.add_argument("output", type=Path)
     args = parser.parse_args()
@@ -51,7 +53,7 @@ def main() -> None:
         write_baseline(args.root, args.output)
         result = {"output": str(args.output), "records": 100}
     else:
-        result = score_predictions(args.root, args.predictions)
+        result = score_predictions(args.root, args.predictions, args.judgments)
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")

@@ -296,14 +296,17 @@ Benchmark data and generated trajectories are intentionally excluded from Git. S
 [`benchmarks/README.md`](benchmarks/README.md) for dataset sources, sizes, limitations, and
 interpretation.
 
-The repository includes **AutoXRD-Bench-100**, a fixed 100-case evaluation spanning typed action
-safety, evidence-gated trajectory decisions, controlled artifact diagnosis, IUCr QPA, and Dara
-experimental phase identification:
+The repository includes **AutoXRD-Bench-100 v2**, a fixed 100-case evaluation with 30 Easy
+select-all questions, 40 Medium scientific reports, and 30 Hard quantitative outcome tasks. Hard
+scores combine deterministic F1/MAE/RMSE-style metrics with a bounded explanation Judge component:
 
 ```bash
 .venv/bin/python benchmarks/autoxrd_bench.py validate
 .venv/bin/python benchmarks/autoxrd_bench.py materialize
 ```
+
+See [`benchmarks/autoxrd_bench_100/README.md`](benchmarks/autoxrd_bench_100/README.md) for the
+isolated Agent run, single frozen-Judge protocol, and final percentage scoring command.
 
 ### FullProf official examples
 

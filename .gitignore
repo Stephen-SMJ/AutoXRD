@@ -31,6 +31,7 @@ CLAUDE.md
 benchmarks/data/
 benchmarks/**/data/
 benchmarks/results/
+benchmarks/*.local.json
 
 
 # Ignore local configuration files that may contain sensitive information

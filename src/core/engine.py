@@ -64,7 +64,8 @@ class Engine:
                  session_store: SessionStore | None = None,
                  cost_tracker: CostTracker | None = None,
                  advisor_model: str | None = None,
-                 advisor_max_uses: int | None = None):
+                 advisor_max_uses: int | None = None,
+                 max_tool_calls: int | None = None):
         self._provider = provider
         self._model = resolve_model(model, provider=provider)
         self._max_tokens = max_tokens or default_max_tokens_for_model(
@@ -89,6 +90,8 @@ class Engine:
         self._advisor_model = advisor_model or "claude-opus-4-6"
         self._advisor_max_uses = advisor_max_uses if advisor_max_uses is not None else 3
         self._advisor_enabled = False
+        self._max_tool_calls = max_tool_calls
+        self._tool_calls_used = 0
 
     # -- advisor toggle --------------------------------------------------------
 
@@ -207,6 +210,7 @@ class Engine:
           AbortedError — if abort() was called (by Esc listener or Ctrl+C)
         """
         self._aborted = False
+        self._tool_calls_used = 0
         self._turn_start_len = len(self._messages)
         self._messages.append({
             "role": "user",
@@ -226,7 +230,12 @@ class Engine:
                 for attempt in range(_MAX_RETRIES):
                     try:
                         _api_t0 = time.monotonic()
-                        tools = [t.to_api_schema() for t in self._tools.values()]
+                        budget_available = (
+                            self._max_tool_calls is None
+                            or self._tool_calls_used < self._max_tool_calls
+                        )
+                        tools = ([t.to_api_schema() for t in self._tools.values()]
+                                 if budget_available else [])
                         if self._advisor_enabled:
                             tools.append({
                                 "type": "advisor_20260301",
@@ -259,6 +268,12 @@ class Engine:
 
                             final = stream.get_final_message()
                             _api_elapsed = time.monotonic() - _api_t0
+                            yield ("api_attempt", {
+                                "attempt": attempt + 1,
+                                "status": "ok",
+                                "duration_seconds": _api_elapsed,
+                                "stop_reason": final.stop_reason,
+                            })
                             # Track token usage / cost
                             if final.usage and self._cost_tracker:
                                 self._cost_tracker.add_usage(self._model, {
@@ -269,7 +284,7 @@ class Engine:
                                     "advisor_input_tokens": getattr(final.usage, "advisor_input_tokens", 0) or 0,
                                     "advisor_output_tokens": getattr(final.usage, "advisor_output_tokens", 0) or 0,
                                 }, api_duration_s=_api_elapsed, advisor_model=self._advisor_model if self._advisor_enabled else None)
-                                yield ("usage", final.usage)
+                                yield ("usage", final.usage, _api_elapsed, final.stop_reason)
                             # Warn if response was truncated by max_tokens
                             if final.stop_reason == "max_tokens":
                                 yield ("error", "Response truncated: hit max_tokens limit.")
@@ -280,6 +295,14 @@ class Engine:
                     except AbortedError:
                         raise
                     except Exception as e:
+                        _api_elapsed = time.monotonic() - _api_t0
+                        yield ("api_attempt", {
+                            "attempt": attempt + 1,
+                            "status": "error",
+                            "duration_seconds": _api_elapsed,
+                            "error_type": type(e).__name__,
+                            "message": self._client.error_message(e),
+                        })
                         if self._client.is_authentication_error(e):
                             self._messages.pop()
                             yield ("error", f"Authentication failed: {self._client.error_message(e)}")
@@ -358,10 +381,17 @@ class Engine:
                             tool = self._tools.get(tn)
                             act = tool.get_activity_description(**ti) if tool else None
                             yield ("tool_call", tn, ti, act)
-                            if tool and self._permissions.check(tool, ti) == "deny":
+                            if (self._max_tool_calls is not None
+                                    and self._tool_calls_used >= self._max_tool_calls):
+                                denied_results[_block_id(tu)] = ToolResult(
+                                    content="Tool-call budget exhausted. Return the best final answer now.",
+                                    is_error=True,
+                                )
+                            elif tool and self._permissions.check(tool, ti) == "deny":
                                 denied_results[_block_id(tu)] = ToolResult(
                                     content="Permission denied.", is_error=True)
                             else:
+                                self._tool_calls_used += 1
                                 approved.append((tu, tool, act))
 
                         # Phase 2: emit tool_executing for approved, then run in parallel
@@ -411,9 +441,16 @@ class Engine:
                             act = tool.get_activity_description(**ti) if tool else None
                             yield ("tool_call", tn, ti, act)
 
-                            if tool and self._permissions.check(tool, ti) == "deny":
+                            if (self._max_tool_calls is not None
+                                    and self._tool_calls_used >= self._max_tool_calls):
+                                result = ToolResult(
+                                    content="Tool-call budget exhausted. Return the best final answer now.",
+                                    is_error=True,
+                                )
+                            elif tool and self._permissions.check(tool, ti) == "deny":
                                 result = ToolResult(content="Permission denied.", is_error=True)
                             else:
+                                self._tool_calls_used += 1
                                 yield ("tool_executing", tn, ti, act)
                                 result = self._execute_tool(tu, skip_permission=True)
 

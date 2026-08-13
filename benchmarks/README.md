@@ -6,10 +6,9 @@ versioned.
 
 ## AutoXRD-Bench-100
 
-The compact agent benchmark is checked in under
-[`autoxrd_bench_100/`](autoxrd_bench_100/README.md). It contains exactly 100 cases: 30 typed
-action/trajectory decisions, 40 controlled residual diagnoses, 20 IUCr quantitative phase-analysis
-cases, and 10 Dara experimental phase-identification cases.
+The tiered v2 agent benchmark is checked in under
+[`autoxrd_bench_100/`](autoxrd_bench_100/README.md). It contains 30 objective select-all Easy cases,
+40 Judge-scored Medium reports, and 30 metric-plus-Judge Hard tasks.
 
 ```bash
 .venv/bin/python benchmarks/autoxrd_bench.py validate
@@ -20,8 +19,8 @@ cases, and 10 Dara experimental phase-identification cases.
 .venv/bin/python benchmarks/autoxrd_bench.py score benchmarks/results/autoxrd-bench-baseline.jsonl
 ```
 
-Public questions and the evaluator oracle are separate files. Keep the oracle outside the agent
-sandbox for blind evaluation. Generated/downloaded diffraction patterns remain ignored by Git.
+Public questions and the evaluator oracle are separate files. The runner confines file tools and
+uses a networkless Docker container for Bash. Generated/downloaded patterns remain ignored by Git.
 
 Run the actual tool-using agent with one isolated session per case:
 
@@ -35,9 +34,40 @@ export OPENAI_API_KEY="your-api-key"
   --workers 4
 ```
 
-The runner checkpoints every case and resumes only missing or failed records. Its report includes
-the 100-point strict percentage, task-family and split percentages, diagnostic partial-credit
-metrics, tool calls, model usage, and elapsed time.
+The initial runner report is provisional because Medium and part of Hard require independent Judge
+records. Generate one frozen-model judgment per non-Easy case with `judge_benchmark.py`, then rerun the scorer
+with `--judgments`; the complete protocol and formulas are in the suite README.
+
+Each case record includes input/output/cache tokens, successful model turns, API attempts and
+retries, requested/executed/error tool calls, wall/API/tool timing, termination reason, and a raw
+per-turn/per-tool trace. `agent_step_count` is defined as successful model turns plus executed tool
+calls. Records are written atomically after every case, and immutable copies are retained under
+`attempts/`. A normal resume preserves API errors; `--retry-errors-only` makes one new attempt only
+for missing/error cases.
+
+For a sequential multi-model paper run, create ignored `benchmarks/model_matrix.local.json` from
+the documented schema in `run_model_batch.py`, then run:
+
+```bash
+nohup .venv/bin/python -u benchmarks/run_model_batch.py \
+  > benchmarks/results/model-batch.log 2>&1 &
+
+# After every model has completed, make one recovery attempt for transport/API errors.
+.venv/bin/python -u benchmarks/run_model_batch.py --recovery
+```
+
+The sanitized `manifest.json` never contains credentials. `batch-state.json`, `probes.json`, and
+one log per model provide progress and failure diagnostics. Solver tasks use one worker and run in
+fixed model order; judging is deliberately deferred until all solver outputs are frozen.
+
+After final Judge scoring, export task/model tables, Pearson/Spearman associations, and
+performance-vs-token/time/step plots with:
+
+```bash
+.venv/bin/python benchmarks/analyze_agent_runs.py \
+  benchmarks/results/model-a benchmarks/results/model-b \
+  --output benchmarks/results/paper-analysis
+```
 
 ## Current Suites
 

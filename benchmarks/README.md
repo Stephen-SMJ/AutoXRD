@@ -57,8 +57,9 @@ nohup .venv/bin/python -u benchmarks/run_model_batch.py \
 ```
 
 The sanitized `manifest.json` never contains credentials. `batch-state.json`, `probes.json`, and
-one log per model provide progress and failure diagnostics. Solver tasks use one worker and run in
-fixed model order; judging is deliberately deferred until all solver outputs are frozen.
+one log per model provide progress and failure diagnostics. Each solver uses one case worker while
+`--model-workers` controls model-level concurrency; judging is deliberately deferred until all
+solver outputs are frozen.
 
 After final Judge scoring, export task/model tables, Pearson/Spearman associations, and
 performance-vs-token/time/step plots with:

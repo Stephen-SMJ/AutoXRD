@@ -463,7 +463,7 @@ lower-is-better:  clip((baseline - metric) / (baseline - oracle), 0, 1)
 `benchmarks/run_model_batch.py` 从 git-ignored local matrix 读取 model/base URL/key。公开 manifest 自动移除 key。实验协议为：
 
 - 每个模型内 `workers=1`；
-- 模型按固定顺序串行运行；
+- 模型层由 `--model-workers` 控制并行度，paper batch 可同时运行 9 个模型；
 - 每 case 完成后立即 checkpoint；
 - 单个模型 command failure 不阻止后续模型；
 - solver 全部冻结后再执行统一 Judge；

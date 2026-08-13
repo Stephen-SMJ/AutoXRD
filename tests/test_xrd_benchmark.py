@@ -13,6 +13,7 @@ from xrd.benchmark import (
     write_baseline,
     write_suite,
 )
+from xrd.benchmark import _semantic_label_match
 
 
 def test_benchmark_has_exactly_100_unique_cases() -> None:
@@ -52,6 +53,8 @@ def test_oracle_submission_scores_one(tmp_path: Path) -> None:
     assert report["micro_score"] == pytest.approx(1.0)
     assert report["by_split"] == pytest.approx({"controlled": 1.0, "experimental": 1.0})
     assert report["missing"] == 0
+    assert report["strict_correct"] == 100
+    assert report["strict_accuracy_percent"] == 100.0
 
 
 def test_baseline_is_complete_and_scores_below_oracle(tmp_path: Path) -> None:
@@ -73,3 +76,13 @@ def test_missing_answers_score_zero_and_duplicate_ids_fail(tmp_path: Path) -> No
     duplicate.write_text(row + row, encoding="utf-8")
     with pytest.raises(ValueError, match="duplicate prediction ids"):
         score_predictions(tmp_path, duplicate)
+
+
+def test_strict_semantic_labels_accept_explanations_not_wrong_mechanisms() -> None:
+    assert _semantic_label_match(
+        "refine_background", "Refine the background model only while keeping structure fixed."
+    )
+    assert _semantic_label_match(
+        "impurity_peaks", "The dominant cause is a missing phase or impurity reflections."
+    )
+    assert not _semantic_label_match("low_angle_asymmetry", "preferred orientation")

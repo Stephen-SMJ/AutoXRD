@@ -23,6 +23,22 @@ cases, and 10 Dara experimental phase-identification cases.
 Public questions and the evaluator oracle are separate files. Keep the oracle outside the agent
 sandbox for blind evaluation. Generated/downloaded diffraction patterns remain ignored by Git.
 
+Run the actual tool-using agent with one isolated session per case:
+
+```bash
+export OPENAI_API_KEY="your-api-key"
+.venv/bin/python benchmarks/run_agent_benchmark.py \
+  --output benchmarks/results/agent-run \
+  --base-url https://api.example.com/v1 \
+  --model your-model \
+  --effort high \
+  --workers 4
+```
+
+The runner checkpoints every case and resumes only missing or failed records. Its report includes
+the 100-point strict percentage, task-family and split percentages, diagnostic partial-credit
+metrics, tool calls, model usage, and elapsed time.
+
 ## Current Suites
 
 ### FullProf official examples

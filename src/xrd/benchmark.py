@@ -576,6 +576,66 @@ def _score_one(family: str, expected: dict[str, Any], predicted: dict[str, Any])
     return 0.8 * phase_f1 + 0.2 * artifact, {"phase_f1": phase_f1, "artifact_exact": artifact}
 
 
+def _normalized_set(value: Any) -> set[str]:
+    if not isinstance(value, (list, tuple, set, frozenset)):
+        return set()
+    return {_normalize_label(item) for item in value}
+
+
+_SEMANTIC_LABELS: dict[str, tuple[str, ...]] = {
+    "zero_shift": ("zeroshift", "zerooffset", "specimendisplacement"),
+    "background_curvature": ("background", "baseline"),
+    "peak_broadening": ("peakbroadening", "profilebroadening", "profilewidth", "widthparameters", "uvw"),
+    "low_angle_asymmetry": ("lowangleasymmetry", "peakasymmetry", "asymmetry"),
+    "impurity_peaks": ("impurity", "missingphase", "unmodeledphase", "secondaryphase"),
+    "preferred_orientation": ("preferredorientation", "marchdollase", "texture"),
+    "limited_range": ("limitedrange", "broader2theta", "broaderscan", "extend2theta"),
+    "high_noise": ("highnoise", "countingnoise", "countingstatistics", "highercounts"),
+    "refine_zero": ("refinezero", "zerooffset", "specimendisplacement"),
+    "refine_background": ("refinebackground", "backgroundmodel", "backgroundterms"),
+    "refine_profile": ("refineprofile", "profilewidth", "widthparameters", "uvw"),
+    "refine_asymmetry": ("refineasymmetry", "asymmetryparameter"),
+    "add_phase": ("addphase", "secondaryphase", "candidatephase", "missingphase"),
+    "refine_preferred_orientation": ("refinepreferredorientation", "marchdollase", "textureparameter"),
+    "request_broader_2theta_range": ("broader2theta", "broaderscan", "extend2theta", "widerscan"),
+    "reacquire_higher_counts": ("reacquire", "highercounts", "longercounting", "repeatandaverage"),
+    "preferred_orientation_reference": ("preferredorientation", "texture", "marchdollase"),
+    "microabsorption_reference": ("microabsorption",),
+}
+
+
+def _semantic_label_match(expected: Any, predicted: Any) -> bool:
+    expected_label = _normalize_label(expected)
+    predicted_label = _normalize_label(predicted)
+    if expected_label == predicted_label:
+        return True
+    phrases = _SEMANTIC_LABELS.get(str(expected), ())
+    return any(_normalize_label(phrase) in predicted_label for phrase in phrases)
+
+
+def _strict_correct(family: str, expected: dict[str, Any], predicted: dict[str, Any]) -> bool:
+    """All-or-nothing primary metric with an explicit QPA numerical tolerance."""
+    if family == "action_contract":
+        return predicted.get("valid") is expected["valid"]
+    if family == "trajectory_gate":
+        return predicted.get("accepted") is expected["accepted"]
+    if family == "residual_diagnosis":
+        return (
+            _semantic_label_match(expected["diagnosis"], predicted.get("diagnosis"))
+            and _semantic_label_match(expected["action"], predicted.get("action"))
+        )
+    if _normalized_set(predicted.get("phases")) != _normalized_set(expected["phases"]):
+        return False
+    if family == "dara_phase_identification":
+        return predicted.get("fully_indexed") is expected["fully_indexed"]
+    if not _semantic_label_match(expected["artifact"], predicted.get("artifact")):
+        return False
+    if "weight_fractions" not in expected:
+        return True
+    _, mae = _fraction_score(expected["weight_fractions"], predicted.get("weight_fractions"))
+    return mae is not None and mae <= 0.05
+
+
 def _stratified_bootstrap_macro(per_case: list[dict[str, Any]], iterations: int = 2000) -> list[float]:
     grouped: dict[str, list[float]] = defaultdict(list)
     for item in per_case:
@@ -618,11 +678,14 @@ def score_predictions(root: Path, predictions_path: Path) -> dict[str, Any]:
         case_id = case["id"]
         if case_id in predictions:
             score, components = _score_one(case["family"], oracle[case_id], predictions[case_id])
+            strict_correct = _strict_correct(case["family"], oracle[case_id], predictions[case_id])
         else:
             score, components = 0.0, {}
+            strict_correct = False
         family_scores[case["family"]].append(score)
         per_case.append({"id": case_id, "family": case["family"], "split": case["split"], "score": score,
-                         "components": components, "missing": case_id not in predictions})
+                         "strict_correct": strict_correct, "components": components,
+                         "missing": case_id not in predictions})
     by_family = {family: sum(values) / len(values) for family, values in family_scores.items()}
     macro = sum(by_family.values()) / len(by_family)
     micro = sum(item["score"] for item in per_case) / len(per_case)
@@ -635,10 +698,30 @@ def score_predictions(root: Path, predictions_path: Path) -> dict[str, Any]:
         / sum(item["split"] == split for item in per_case)
         for split in {item["split"] for item in per_case}
     }
+    strict_by_family = {}
+    for family in EXPECTED_COUNTS:
+        items = [item for item in per_case if item["family"] == family]
+        correct = sum(item["strict_correct"] for item in items)
+        strict_by_family[family] = {
+            "correct": correct, "total": len(items), "percent": 100.0 * correct / len(items)
+        }
+    strict_by_split = {}
+    for split in {item["split"] for item in per_case}:
+        items = [item for item in per_case if item["split"] == split]
+        correct = sum(item["strict_correct"] for item in items)
+        strict_by_split[split] = {
+            "correct": correct, "total": len(items), "percent": 100.0 * correct / len(items)
+        }
+    strict_correct = sum(item["strict_correct"] for item in per_case)
     return {
         "benchmark_id": BENCHMARK_ID,
         "submitted": len(predictions),
         "missing": 100 - len(predictions),
+        "strict_correct": strict_correct,
+        "strict_total": 100,
+        "strict_accuracy_percent": float(strict_correct),
+        "strict_by_family": strict_by_family,
+        "strict_by_split": strict_by_split,
         "macro_score": macro,
         "macro_score_bootstrap_95ci": _stratified_bootstrap_macro(per_case),
         "micro_score": micro,

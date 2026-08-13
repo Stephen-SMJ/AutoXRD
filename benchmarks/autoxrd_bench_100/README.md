@@ -85,6 +85,13 @@ The scorer reports macro and micro scores, each family score, physical-gate erro
 accuracy, and per-case components. The v1 primary comparison should use `macro_score`; always
 publish family scores alongside it.
 
+For Agent runs, the primary paper-facing metric is `strict_accuracy_percent`: every case is worth
+one point. Typed-action and trajectory cases require the correct final boolean decision; their
+machine-code reason F1 remains diagnostic. Residual cases require both the diagnosis and next-action
+classes, with deterministic scientific phrase aliases accepted. Phase cases require an exact phase
+set and the auxiliary decision/artifact. Reference QPA cases additionally require weight-fraction
+MAE at or below 0.05. Missing or malformed responses receive zero.
+
 ## Evaluation Rules
 
 1. Give every system the same files, phase candidates, FullProf-call budget, and timeout.

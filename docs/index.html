@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AutoXRD: autonomous LLM agents and comprehensive evaluation for powder X-ray diffraction analysis.">
+  <title>AutoXRD | Autonomous Powder Diffraction Analysis</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <nav class="topbar">
+      <a class="brand" href="#top" aria-label="AutoXRD home"><span class="brand-mark">A</span><span>AutoXRD</span></a>
+      <div class="nav-links"><a href="#method">Method</a><a href="#xrdbench">XRDBench</a><a href="#results">Results</a></div>
+    </nav>
+    <header class="hero" id="top">
+      <div class="hero-glow hero-glow-one"></div><div class="hero-glow hero-glow-two"></div>
+      <h1><span>AutoXRD</span><small>Autonomous LLM Agents and Comprehensive Evaluation for Powder Diffraction Analysis</small></h1>
+      <p class="hero-copy">Verifiable, stepwise powder X-ray diffraction analysis with executable crystallographic backends and scientific checks.</p>
+      <div class="publication-links">
+        <a class="pill-link" href="assets/paper.pdf"><span class="pill-icon">↗</span><span><strong>Paper</strong><small>PDF</small></span></a>
+        <a class="pill-link" href="http://15.235.218.70:8765/"><span class="pill-icon">◎</span><span><strong>XRDBench</strong><small>Interactive benchmark</small></span></a>
+        <a class="pill-link" href="https://github.com/Stephen-SMJ/AutoXRD"><span class="pill-icon">&lt;/&gt;</span><span><strong>Code</strong><small>GitHub</small></span></a>
+      </div>
+      <div class="metric-strip" aria-label="Study highlights">
+        <div><strong>134</strong><span>XRD tasks</span></div><div><strong>10</strong><span>recent LLMs</span></div>
+        <div><strong>1,340</strong><span>model–task runs</span></div><div><strong>625.6M</strong><span>trajectory tokens</span></div>
+      </div>
+    </header>
+    <section class="section abstract-section">
+      <div class="section-heading"><span class="eyebrow">Overview</span><h2>From plausible answers to verifiable XRD workflows</h2></div>
+      <div class="abstract-card">
+        <p>Powder X-ray diffraction is central to materials characterization, yet reliable end-to-end automation remains challenging. AutoXRD organizes powder-XRD analysis into stepwise refinement procedures, grounds actions in observed evidence, and applies deterministic crystallographic and physical checks before accepting a result.</p>
+        <p>XRDBench evaluates the resulting agents through 100 diagnostic questions and 34 executable workflows across eleven XRD task families. Across ten models, performance decreases from 61.9 on diagnostic QA to 53.7 on E2E workflows, exposing persistent limitations in quantitative reasoning, indexing, Rietveld refinement, and controlled termination.</p>
+      </div>
+    </section>
+    <section class="section method-section" id="method">
+      <div class="section-heading centered"><span class="eyebrow">Method</span><h2>AutoXRD: evidence-preserving scientific execution</h2><p>Planning, refinement backends, physical validation, and auditable trajectories in one agent framework.</p></div>
+      <figure class="figure-card wide-figure"><a href="assets/figures/autoxrd-architecture.pdf" title="Open the vector PDF"><img src="assets/figures/autoxrd-architecture.png" alt="Architecture of AutoXRD and XRDBench"></a><figcaption><strong>AutoXRD overview.</strong> Skill-guided planning, executable XRD tools, deterministic checks, and evidence-preserving refinement trajectories. Click the figure to open its vector PDF.</figcaption></figure>
+    </section>
+
+    <section class="section benchmark-section" id="xrdbench">
+      <div class="section-heading centered"><span class="eyebrow orange">Benchmark</span><h2>XRDBench evaluates reasoning and execution</h2><p>Two complementary tracks test isolated scientific decisions and their composition into executable XRD workflows.</p></div>
+      <div class="track-grid">
+        <article class="track-card qa-card"><span class="track-tag">XRDBench-QA</span><strong>100</strong><h3>Diagnostic tasks</h3><p>Refinement decisions, residual interpretation, parameter recovery, phase analysis, and refinement-history assessment.</p><ul><li>30 easy · 40 medium · 30 hard</li><li>Maximum 20 tool calls</li><li>Exact, objective, and scientific evaluation</li></ul></article>
+        <article class="track-card e2e-card"><span class="track-tag">XRDBench-E2E</span><strong>34</strong><h3>Executable workflows</h3><p>State-changing analyses across eleven XRD task families with artifacts, execution gates, and physical validation.</p><ul><li>Measured diffraction patterns</li><li>Maximum 50 agent steps</li><li>Artifact 15% · Metrics 55% · Judge 30%</li></ul></article>
+      </div>
+      <figure class="figure-card"><img src="assets/figures/xrdbench-composition.svg" alt="XRDBench task composition across QA and E2E tracks"><figcaption><strong>XRDBench composition.</strong> The two tracks contain 134 tasks spanning diagnostic capabilities and eleven executable XRD task families.</figcaption></figure>
+    </section>
+
+    <section class="section results-section" id="results">
+      <div class="section-heading centered"><span class="eyebrow">Evaluation</span><h2>Large-scale evaluation of ten recent LLMs</h2><p>1,340 model–task runs reveal a clear gap between bounded scientific reasoning and autonomous workflow execution.</p></div>
+      <div class="result-callouts">
+        <article><span>Overall mean</span><strong>57.8</strong><p>out of 100 across the two tracks</p></article>
+        <article><span>QA mean</span><strong>61.9</strong><p>bounded diagnostic reasoning</p></article>
+        <article class="accent-orange"><span>E2E mean</span><strong>53.7</strong><p>executable XRD workflows</p></article>
+        <article class="accent-violet"><span>Best overall</span><strong>81.1</strong><p>GPT-5.6 Sol</p></article>
+      </div>
+      <figure class="figure-card"><a href="assets/figures/overall-performance.pdf" title="Open the vector PDF"><img src="assets/figures/overall-performance.svg" alt="Overall, QA, and E2E performance of ten language models"></a><figcaption><strong>Overall performance.</strong> Scores combine XRDBench-QA and XRDBench-E2E with equal track weight. Click the figure to open its vector PDF.</figcaption></figure>
+
+      <div class="subsection-heading"><span class="eyebrow">Fine-grained analysis</span><h3>Capability profiles expose different scientific bottlenecks</h3></div>
+      <figure class="figure-card"><img src="assets/figures/capability-radar.svg" alt="Fine-grained capability radar charts for QA and E2E tasks"><figcaption><strong>Capability profiles.</strong> Models are relatively strong at refinement-history assessment and result acceptance, but remain weak at action selection, phase quantification, indexing, and Rietveld refinement.</figcaption></figure>
+
+      <div class="subsection-heading"><span class="eyebrow">Efficiency</span><h3>Accuracy, execution time, tokens, steps, and cost</h3></div>
+      <figure class="figure-card"><img src="assets/figures/efficiency-tradeoffs.svg" alt="Efficiency and cost-effectiveness trade-offs across ten models"><figcaption><strong>Efficiency and cost-effectiveness.</strong> Resource means pool all 134 tasks per model; GPT-5.6 Luna provides the strongest score–cost trade-off.</figcaption></figure>
+    </section>
+
+    <section class="section ablation-section">
+      <div class="section-heading"><span class="eyebrow">Ablation study</span><h2>Which AutoXRD components matter?</h2><p>All six evaluated components improve GPT-5.6 Luna on their targeted XRDBench-QA settings, with the largest gains from result-acceptance checks and final scientific review.</p></div>
+      <figure class="figure-card ablation-figure"><a href="assets/figures/ablation-study.pdf" title="Open the vector PDF"><img src="assets/figures/ablation-study.svg" alt="Score improvements from six AutoXRD components in GPT-5.6 Luna ablations"></a><figcaption><strong>Component effects.</strong> Bars report the full-system score minus the score after removing each component. Click the figure to open its vector PDF.</figcaption></figure>
+    </section>
+
+    <section class="section findings-section">
+      <div class="section-heading centered"><span class="eyebrow orange">Findings</span><h2>Where current XRD agents still fail</h2></div>
+      <div class="finding-grid">
+        <article><span>01</span><h3>Scientific outcome failures</h3><p>Agents may execute a workflow successfully yet return inaccurate cells, HKL assignments, or structurally invalid refinements.</p></article>
+        <article><span>02</span><h3>Execution and evidence failures</h3><p>Missing code, invalid backend outputs, or incomplete artifacts prevent scoring and scientific verification.</p></article>
+        <article><span>03</span><h3>Termination failures</h3><p>Some trajectories consume nearly the full 50-step budget without producing a valid deliverable.</p></article>
+      </div>
+    </section>
+
+    <section class="citation-section citation-pending">
+      <div><span class="eyebrow">Citation</span><h2>AutoXRD</h2><p>BibTeX will be added when the public paper record is available.</p></div>
+    </section>
+  </main>
+  <footer><strong>AutoXRD</strong><span>Autonomous powder diffraction analysis with verifiable scientific execution.</span></footer>
+</body>
+</html>

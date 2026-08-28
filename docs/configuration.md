@@ -2,7 +2,7 @@
 
 ## API Keys
 
-### Anthropic (default)
+### Anthropic
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -17,6 +17,10 @@ export OPENAI_API_KEY=sk-...
 export OPENAI_BASE_URL=https://your-openai-gateway.example.com
 ```
 
+OpenAI-compatible mode is the default provider. Configure the endpoint and
+model explicitly unless you intentionally use the built-in development
+defaults.
+
 ### Environment Variables
 
 | Variable | Description |
@@ -26,7 +30,8 @@ export OPENAI_BASE_URL=https://your-openai-gateway.example.com
 | `AUTOXRD_EFFORT` | Reasoning effort (`low`, `medium`, `high`) |
 | `AUTOXRD_PROVIDER` | `anthropic` or `openai` |
 | `AUTOXRD_BUDDY_MODEL` | Model for companion pet reactions |
-| `AUTOXRD_BUDDY_SEED` | Override buddy seed for specific companion |
+| `AUTOXRD_ADVISOR_MODEL` | Optional model used for advisor calls |
+| `AUTOXRD_ADVISOR_MAX_USES` | Maximum advisor calls per task |
 
 ## CLI Flags
 
@@ -44,7 +49,8 @@ autoxrd \
 
 ## TOML Config Files
 
-Loaded in order (later overrides earlier):
+Loaded in order (later files override earlier files; CLI and environment values
+override both):
 
 1. `~/.config/autoxrd/config.toml`
 2. `.autoxrd.toml` in the current working directory
@@ -57,7 +63,6 @@ Point to a specific file with `--config`.
 provider = "anthropic"
 
 [anthropic]
-api_key = "sk-ant-..."
 base_url = "https://your-gateway.example.com"
 model = "claude-sonnet-4"
 ```
@@ -68,7 +73,6 @@ model = "claude-sonnet-4"
 provider = "openai"
 
 [openai]
-api_key = "sk-..."
 base_url = "https://your-openai-gateway.example.com/v1"
 model = "gpt-4.1-mini"
 max_tokens = 8192
@@ -82,9 +86,10 @@ buddy_model = "gpt-4.1-mini"
 provider = "openai"
 
 [openai]
-api_key = "sk-or-..."
 base_url = "https://openrouter.ai/api/v1"
 model = "qwen/qwen3.6-plus-preview:free"
 ```
 
 When `provider = "openai"`, `OPENAI_API_KEY` / `OPENAI_BASE_URL` are used. When `provider = "anthropic"`, `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` are used.
+Keep API keys in environment variables or an ignored `.env` file rather than
+committing them to TOML.

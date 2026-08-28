@@ -44,6 +44,13 @@ class GlobTool(Tool):
         return f"Finding {pattern}" if pattern else None
 
     def execute(self, pattern: str, path: str = ".") -> ToolResult:
+        pattern_path = Path(pattern)
+        if pattern_path.is_absolute() or ".." in pattern_path.parts:
+            return ToolResult(
+                content=("Error: Glob pattern must be relative to the search path and "
+                         "must not contain '..'. Set path explicitly instead."),
+                is_error=True,
+            )
         base = Path(path).resolve()
         if not base.exists():
             return ToolResult(content=f"Error: Directory not found: {path}", is_error=True)

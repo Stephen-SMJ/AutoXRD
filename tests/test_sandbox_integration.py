@@ -12,10 +12,17 @@ from features.sandbox.config import SandboxConfig, SandboxFilesystemConfig
 from features.sandbox.manager import SandboxManager
 from features.sandbox.wrapper import build_bwrap_args, wrap_command
 
-pytestmark = pytest.mark.skipif(
-    not shutil.which("bwrap"),
-    reason="bwrap not available",
-)
+def _bwrap_usable() -> bool:
+    if not shutil.which("bwrap"):
+        return False
+    probe = subprocess.run(
+        ["bwrap", "--ro-bind", "/", "/", "--unshare-net", "--", "/bin/true"],
+        capture_output=True, timeout=5,
+    )
+    return probe.returncode == 0
+
+
+pytestmark = pytest.mark.skipif(not _bwrap_usable(), reason="bwrap namespaces unavailable")
 
 
 def _run_sandboxed(command: str, config: SandboxConfig | None = None, cwd: str | None = None) -> subprocess.CompletedProcess:

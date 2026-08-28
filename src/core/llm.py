@@ -72,6 +72,7 @@ class LLMMessage:
     content: list[dict[str, Any]]
     usage: LLMUsage | None = None
     stop_reason: str | None = None  # "end_turn", "max_tokens", "tool_use", etc.
+    response_model: str | None = None
 
 
 def validate_provider(provider: str | None) -> ProviderName:
@@ -108,6 +109,12 @@ def supports_reasoning_effort(provider: str, model: str) -> bool:
         return False
     lowered = model.lower()
     return lowered.startswith(("mimo-v2.5", "gpt-5", "o1", "o3", "o4"))
+
+
+def _requires_openai_non_stream(model: str) -> bool:
+    """Return whether a known endpoint should use non-stream chat calls."""
+
+    return model.strip().lower().startswith("mimo-v2.5")
 
 
 class LLMClient:
@@ -172,6 +179,20 @@ class LLMClient:
         effort: str | None = None,
     ):
         if self.provider == _OPENAI_PROVIDER:
+            # MiMo's public OpenAI-compatible endpoint currently completes
+            # non-streaming chat requests but can leave streaming responses
+            # open without a terminal chunk. Keep the engine's stream-shaped
+            # interface while using a bounded non-stream request for MiMo.
+            if _requires_openai_non_stream(model):
+                return _OpenAINonStream(
+                    client=self._client,
+                    model=model,
+                    max_tokens=max_tokens,
+                    messages=messages,
+                    system=system,
+                    tools=tools or [],
+                    effort=effort,
+                )
             return _OpenAIStream(
                 client=self._client,
                 model=model,
@@ -199,14 +220,25 @@ class LLMClient:
         if isinstance(exc, (httpx.RemoteProtocolError, httpx.ReadError, httpx.ConnectError)):
             return True
         if self.provider == _OPENAI_PROVIDER:
-            return openai is not None and isinstance(
-                exc,
-                (
+            if openai is None:
+                return False
+            if isinstance(exc, (
                     openai.RateLimitError,
                     openai.APIConnectionError,
                     openai.InternalServerError,
-                ),
-            )
+            )):
+                return True
+            # Some OpenAI-compatible HTTP/2 gateways surface a transient
+            # mid-stream reset as the base APIError rather than a connection
+            # or 5xx subclass. Retrying these transport signatures preserves
+            # the task trajectory without retrying ordinary 4xx requests.
+            if isinstance(exc, openai.APIError):
+                message = self.error_message(exc).lower()
+                return any(marker in message for marker in (
+                    "stream error", "internal_error", "received from peer",
+                    "connection reset", "connection closed",
+                ))
+            return False
         return isinstance(
             exc,
             (
@@ -249,6 +281,7 @@ class LLMClient:
             content=_normalize_anthropic_content(getattr(response, "content", [])),
             usage=usage,
             stop_reason=getattr(response, "stop_reason", None),
+            response_model=getattr(response, "model", None),
         )
 
     def _openai_create_message(
@@ -279,6 +312,7 @@ class LLMClient:
             content=_normalize_openai_message(message),
             usage=usage,
             stop_reason=_normalize_openai_stop_reason(finish_reason),
+            response_model=getattr(response, "model", None),
         )
 
 
@@ -324,6 +358,7 @@ class _AnthropicStream:
             content=_normalize_anthropic_content(getattr(final, "content", [])),
             usage=_usage_from_anthropic(getattr(final, "usage", None)),
             stop_reason=getattr(final, "stop_reason", None),
+            response_model=getattr(final, "model", None),
         )
 
 
@@ -354,6 +389,7 @@ class _OpenAIStream:
         self._tool_calls: dict[int, dict[str, Any]] = {}
         self._usage: LLMUsage | None = None
         self._finish_reason: str | None = None
+        self._response_model: str | None = None
         self.text_stream: Iterator[str] = iter(())
 
     def __enter__(self):
@@ -371,6 +407,9 @@ class _OpenAIStream:
 
     def _iter_text(self) -> Iterator[str]:
         for chunk in self._stream:
+            response_model = _value(chunk, "model")
+            if response_model:
+                self._response_model = str(response_model)
             usage = getattr(chunk, "usage", None)
             if usage is not None:
                 self._usage = _usage_from_openai(usage)
@@ -425,7 +464,58 @@ class _OpenAIStream:
             content=content,
             usage=self._usage,
             stop_reason=_normalize_openai_stop_reason(self._finish_reason),
+            response_model=self._response_model,
         )
+
+
+class _OpenAINonStream:
+    """Adapter exposing a non-stream OpenAI response as a stream-shaped object."""
+
+    def __init__(
+        self,
+        *,
+        client: Any,
+        model: str,
+        max_tokens: int,
+        messages: list[dict[str, Any]],
+        system: str | None,
+        tools: list[dict[str, Any]],
+        effort: str | None,
+    ):
+        self._client = client
+        self._params = _build_openai_request(
+            model=model,
+            max_tokens=max_tokens,
+            messages=messages,
+            system=system,
+            tools=tools,
+            effort=effort,
+            stream=False,
+        )
+        self._final: LLMMessage | None = None
+        self.text_stream: Iterator[str] = iter(())
+
+    def __enter__(self):
+        response = self._client.chat.completions.create(**self._params)
+        choice = response.choices[0] if response.choices else None
+        finish_reason = _value(choice, "finish_reason") if choice else None
+        message = _value(choice, "message") if choice else None
+        self._final = LLMMessage(
+            content=_normalize_openai_message(message),
+            usage=_usage_from_openai(getattr(response, "usage", None)),
+            stop_reason=_normalize_openai_stop_reason(finish_reason),
+            response_model=getattr(response, "model", None),
+        )
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def close(self) -> None:
+        return None
+
+    def get_final_message(self) -> LLMMessage:
+        return self._final or LLMMessage(content=[])
 
 
 def _normalize_openai_stop_reason(reason: str | None) -> str | None:

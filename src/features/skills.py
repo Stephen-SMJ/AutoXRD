@@ -16,6 +16,7 @@ Execution modes:
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -246,22 +247,46 @@ def discover_skills(cwd: str | None = None) -> list[Skill]:
     """Discover and register skills from standard locations.
 
     Search order (matches claude-code's four-tier hierarchy):
-      1. Bundled skills (already registered via ``register_bundled_skills()``)
+      1. Built-in XRD skills shipped with AutoXRD
       2. User skills:    ``~/.autoxrd/skills/``
       3. Project skills: ``{cwd}/.autoxrd/skills/``
+
+    Built-in skills are loaded from the repository checkout during development
+    and from the wheel's ``autoxrd_skills`` data directory after installation.
+    Later scopes intentionally override an earlier skill with the same name.
 
     Returns newly loaded skills (excludes already-registered bundled ones).
     """
     loaded: list[Skill] = []
 
-    # User-level skills
-    user_dir = Path.home() / ".autoxrd" / "skills"
-    loaded.extend(load_skills_from_dir(user_dir, source="user"))
+    package_root = Path(__file__).resolve().parents[1]
+    source_root = Path(__file__).resolve().parents[2]
+    builtin_dirs = []
+    configured_dir = os.environ.get("AUTOXRD_SKILLS_DIR")
+    if configured_dir:
+        builtin_dirs.append(Path(configured_dir).expanduser())
+    builtin_dirs.extend([
+        package_root / "autoxrd_skills",
+        source_root / ".autoxrd" / "skills",
+    ])
 
-    # Project-level skills
+    search_dirs: list[tuple[Path, str]] = [
+        (path, "bundled") for path in builtin_dirs
+    ]
+    search_dirs.append((Path.home() / ".autoxrd" / "skills", "user"))
     if cwd:
-        project_dir = Path(cwd) / ".autoxrd" / "skills"
-        loaded.extend(load_skills_from_dir(project_dir, source="project"))
+        search_dirs.append((Path(cwd) / ".autoxrd" / "skills", "project"))
+
+    seen: set[Path] = set()
+    for skills_dir, source in search_dirs:
+        try:
+            canonical = skills_dir.expanduser().resolve()
+        except OSError:
+            canonical = skills_dir.expanduser()
+        if canonical in seen:
+            continue
+        seen.add(canonical)
+        loaded.extend(load_skills_from_dir(canonical, source=source))
 
     return loaded
 

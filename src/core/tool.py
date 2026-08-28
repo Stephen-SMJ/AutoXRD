@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
 class ToolResult:
     content: str
     is_error: bool = False
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class Tool(ABC):

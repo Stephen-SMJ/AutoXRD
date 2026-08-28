@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from features.skills import clear_skills, discover_skills, get_skill
+from features.skills import build_skills_prompt_section, clear_skills, discover_skills, get_skill
 
 
 ROOT = Path(__file__).parents[1]
@@ -32,6 +32,17 @@ def test_project_xrd_skills_are_discoverable():
     assert "scan.xy" in prompt
     assert "AUTOXRD_SKILL_DIR" not in prompt
     assert "CLAUDE_SKILL_DIR" not in prompt
+
+
+def test_xrd_skills_are_builtin_from_an_external_workspace(tmp_path: Path):
+    clear_skills()
+    loaded = discover_skills(str(tmp_path))
+
+    names = {skill.name for skill in loaded}
+    assert "fullprof-staged-refinement" in names
+    assert "xrd-trajectory-gate" in names
+    assert get_skill("fullprof-staged-refinement").source == "bundled"
+    assert "xrd-pattern-qc" in build_skills_prompt_section()
 
 
 def test_pattern_qc_script_emits_pattern_state(tmp_path: Path):

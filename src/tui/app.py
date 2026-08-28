@@ -169,7 +169,7 @@ def main() -> None:
         return [
             FileReadTool(), GlobTool(), GrepTool(),
             FileEditTool(), FileWriteTool(),
-            BashTool(sandbox_manager=sandbox_mgr),
+            BashTool(sandbox_manager=sandbox_mgr, cwd=cwd),
         ]
 
     worker_tool_names = [tool.name for tool in _build_base_tools()]
@@ -219,7 +219,10 @@ def main() -> None:
             sandbox_manager=sandbox_mgr,
         )
         return Engine(
-            tools=[FileReadTool(), GlobTool(), GrepTool(), BashTool(sandbox_manager=sandbox_mgr)],
+            tools=[
+                FileReadTool(), GlobTool(), GrepTool(),
+                BashTool(sandbox_manager=sandbox_mgr, cwd=cwd),
+            ],
             system_prompt=EXPLORE_SYSTEM_PROMPT,
             permission_checker=explore_permissions,
             provider=app_config.provider,

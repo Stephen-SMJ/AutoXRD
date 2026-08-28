@@ -92,8 +92,11 @@ EOF
         printf "  Run:  ${BOLD}autoxrd${RESET}\n\n"
     fi
 
-    printf "  Set your API key first:\n"
-    printf "    ${BOLD}export ANTHROPIC_API_KEY=sk-ant-...${RESET}\n\n"
+    printf "  Configure a provider before starting. For an OpenAI-compatible endpoint:\n"
+    printf "    ${BOLD}export AUTOXRD_PROVIDER=openai${RESET}\n"
+    printf "    ${BOLD}export OPENAI_API_KEY=your-api-key${RESET}\n"
+    printf "    ${BOLD}export OPENAI_BASE_URL=https://your-provider.example.com/v1${RESET}\n"
+    printf "    ${BOLD}export AUTOXRD_MODEL=your-model-name${RESET}\n\n"
     printf "  Installed to:  ${CYAN}${INSTALL_DIR}${RESET}\n"
     printf "  Launcher:      ${CYAN}${LAUNCHER}${RESET}\n\n"
 }

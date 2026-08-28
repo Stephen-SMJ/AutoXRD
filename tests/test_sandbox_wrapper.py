@@ -82,6 +82,17 @@ class TestBuildBwrapArgs:
         idx = args.index(str(secret_dir))
         assert args[idx - 1] == "--tmpfs"
 
+    def test_deny_read_file_uses_dev_null_bind(self, tmp_path: Path):
+        secret_file = tmp_path / "oracle.json"
+        secret_file.write_text("secret")
+        cfg = SandboxConfig(
+            enabled=True,
+            filesystem=SandboxFilesystemConfig(deny_read=[str(secret_file)]),
+        )
+        args = build_bwrap_args("ls", cfg, cwd=str(tmp_path))
+        index = args.index(str(secret_file))
+        assert args[index - 2:index + 1] == ["--ro-bind", "/dev/null", str(secret_file)]
+
     def test_chdir_set(self):
         cfg = SandboxConfig(enabled=True)
         args = build_bwrap_args("ls", cfg, cwd="/tmp/test")

@@ -1,4 +1,4 @@
-"""Powder XRD backends, typed workflows, metrics, and benchmark utilities.
+"""Powder XRD backends, typed workflows, metrics, and validation utilities.
 
 Import specialized modules directly (for example, ``xrd.trajectory``). Keeping the
 package initializer small also allows those modules to be used as warning-free CLIs.

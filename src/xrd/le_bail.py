@@ -5,10 +5,22 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 
 from .fullprof import FullProfMetrics, run_fullprof_template
 from .pcr import parse_pcr, validate_le_bail_initialization
+
+
+def default_fullprof_executable() -> Path:
+    for name in ("AUTOXRD_FULLPROF_BIN", "FULLPROF_BIN"):
+        value = os.environ.get(name)
+        if value:
+            return Path(value).expanduser()
+    discovered = shutil.which("fp2k")
+    if discovered:
+        return Path(discovered)
+    return Path("~/.local/share/autoxrd/fullprof/fp2k").expanduser()
 
 
 def initialize_le_bail(executable: Path, template: Path, pattern: Path,
@@ -38,8 +50,7 @@ def main() -> None:
     parser.add_argument("pattern", type=Path)
     parser.add_argument("results", type=Path)
     parser.add_argument("--case", default="le_bail_000")
-    parser.add_argument("--fp2k", type=Path,
-                        default=Path(os.environ.get("AUTOXRD_FULLPROF_BIN", ".venv/bin/fp2k")))
+    parser.add_argument("--fp2k", type=Path, default=default_fullprof_executable())
     parser.add_argument("--timeout", type=float, default=120.0)
     args = parser.parse_args()
     metrics = initialize_le_bail(args.fp2k.resolve(), args.template.resolve(),

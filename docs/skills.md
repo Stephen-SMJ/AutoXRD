@@ -1,8 +1,10 @@
 # Skills
 
-Skills are one-command workflows. Type `/name` and the AI runs a full sequence of steps.
+Skills are reusable instruction sets that teach AutoXRD how to carry out a
+workflow. Slash-command skills can be invoked directly with `/name`; scientific
+skills are also discovered automatically and included in the agent context.
 
-## Built-in Skills
+## General Built-in Skills
 
 | Command | What it does |
 |---------|-------------|
@@ -19,6 +21,28 @@ All skills accept optional arguments:
 /commit fix login page styling
 /test only run test_auth.py
 ```
+
+## Packaged XRD Skills
+
+AutoXRD also ships ten powder-diffraction skills. These are procedures rather
+than shortcut solvers: the agent still has to inspect files, write or modify
+code, execute the scientific backend, and validate the generated results.
+
+| Skill | Purpose |
+|---|---|
+| `xrd-pattern-qc` | Audit pattern range, sampling, noise, and peak resolution |
+| `xrd-structure-audit` | Audit CIF chemistry, symmetry, sites, occupancy, and distances |
+| `gsasii-executable-workflow` | Build auditable workflows with `GSASIIscriptable` |
+| `fullprof-le-bail` | Establish and diagnose a FullProf Le Bail baseline |
+| `fullprof-pcr-compiler` | Compile structured actions into guarded PCR changes |
+| `fullprof-staged-refinement` | Guide staged FullProf Le Bail, Rietveld, and QPA work |
+| `xrd-residual-features` | Compute observed-minus-calculated residual features |
+| `xrd-residual-diagnosis` | Rank plausible causes and propose testable next actions |
+| `xrd-trajectory-gate` | Audit before/after evidence and accept or reject a step |
+| `xrd-physical-audit` | Check final physical validity, correlations, and uncertainty |
+
+The installed wheel contains these skills. `AUTOXRD_SKILLS_DIR` can point to an
+alternate packaged-skill directory for development deployments.
 
 ## Example
 
@@ -78,7 +102,7 @@ Running skill: /deploy…
 
 | Location | Scope |
 |----------|-------|
-| Built-in | 4 bundled skills, always available |
+| Built-in | 4 general slash-command skills and 10 XRD workflow skills |
 | `~/.autoxrd/skills/` | Personal skills, all projects |
 | `<project>/.autoxrd/skills/` | Project skills, share with team |
 

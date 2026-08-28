@@ -27,13 +27,14 @@ def _make_engine(auto_approve=True):
     )
 
 
-def _make_text_response(text: str):
+def _make_text_response(text: str, response_model: str | None = None):
     """Simulate an API response with just text (no tool calls)."""
     from core.llm import LLMMessage, LLMUsage
 
     final_msg = LLMMessage(
         content=[{"type": "text", "text": text}],
         usage=LLMUsage(),
+        response_model=response_model,
     )
 
     stream = MagicMock()
@@ -87,6 +88,73 @@ def test_engine_executes_tool_and_loops():
     _, tool_name, _, result = tool_result_events[0]
     assert tool_name == "Echo"
     assert "Echo: world" in result.content
+
+
+def test_engine_injects_step_progress_and_final_five_warning():
+    engine = Engine(
+        tools=[EchoTool()],
+        system_prompt="You are a test assistant.",
+        permission_checker=PermissionChecker(auto_approve=True),
+        max_tool_calls=6,
+        tool_budget_notices=True,
+    )
+    streams = _make_tool_then_text_response("Echo", {"message": "world"}, "tu_1", "done")
+
+    with patch.object(engine._client, "stream_messages", side_effect=streams) as stream:
+        list(engine.submit("use the echo tool"))
+
+    follow_up = stream.call_args_list[1].kwargs["messages"][2]["content"][0]["content"]
+    assert "tool-step progress: 1/6 completed; 5 remain" in follow_up
+    assert "next 4 tool steps" in follow_up
+    assert "reserve the last tool step" in follow_up
+
+
+def test_engine_retries_response_model_mismatch_without_emitting_rejected_text():
+    engine = Engine(
+        tools=[EchoTool()],
+        system_prompt="You are a test assistant.",
+        permission_checker=PermissionChecker(auto_approve=True),
+        provider="openai",
+        model="mimo-v2.5-pro",
+        api_key="test-key",
+        require_response_model_match=True,
+    )
+    streams = [
+        _make_text_response("wrong model output", "mimo-v2.5-free"),
+        _make_text_response("accepted output", "mimo-v2.5-pro"),
+    ]
+
+    with patch.object(engine._client, "stream_messages", side_effect=streams):
+        events = list(engine.submit("answer"))
+
+    attempts = [event[1] for event in events if event[0] == "api_attempt"]
+    text = "".join(event[1] for event in events if event[0] == "text")
+    assert [row["status"] for row in attempts] == ["rejected", "ok"]
+    assert attempts[0]["error_type"] == "ResponseModelMismatch"
+    assert "wrong model output" not in text
+    assert text == "accepted output"
+
+
+def test_engine_retries_plain_text_tool_markup():
+    engine = Engine(
+        tools=[EchoTool()],
+        system_prompt="You are a test assistant.",
+        permission_checker=PermissionChecker(auto_approve=True),
+        reject_malformed_tool_calls=True,
+    )
+    streams = [
+        _make_text_response("<tool_call><function=Bash>bad</function>"),
+        _make_text_response("final answer"),
+    ]
+
+    with patch.object(engine._client, "stream_messages", side_effect=streams):
+        events = list(engine.submit("answer"))
+
+    attempts = [event[1] for event in events if event[0] == "api_attempt"]
+    text = "".join(event[1] for event in events if event[0] == "text")
+    assert [row["status"] for row in attempts] == ["rejected", "ok"]
+    assert attempts[0]["error_type"] == "MalformedToolCall"
+    assert text == "final answer"
 
 
 def test_engine_denied_tool_returns_error_result():

@@ -20,7 +20,7 @@ a Le Bail template.
 Run the initialization:
 
 ```bash
-python -m xrd.le_bail TEMPLATE.pcr PATTERN.dat RUNS_DIR --case le_bail_000
+python -m xrd.le_bail TEMPLATE.pcr PATTERN.dat RUNS_DIR --case le_bail_000 --fp2k "$FULLPROF_BIN"
 ```
 
 Inspect the calculated/difference pattern and generated HKL artifacts. For subsequent cycles, use the

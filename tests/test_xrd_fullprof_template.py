@@ -3,6 +3,15 @@ from pathlib import Path
 import pytest
 
 from xrd.fullprof import run_fullprof_template
+from xrd.le_bail import default_fullprof_executable
+
+
+def test_fullprof_discovery_honors_benchmark_environment(monkeypatch, tmp_path: Path):
+    executable = tmp_path / "fp2k"
+    executable.write_text("binary", encoding="utf-8")
+    monkeypatch.delenv("AUTOXRD_FULLPROF_BIN", raising=False)
+    monkeypatch.setenv("FULLPROF_BIN", str(executable))
+    assert default_fullprof_executable() == executable
 
 
 def test_template_runner_rejects_unsafe_case(tmp_path: Path):

@@ -1,284 +1,226 @@
 # AutoXRD
 
-AutoXRD is a terminal-based LLM agent for powder X-ray diffraction analysis and
-physically auditable Rietveld refinement. It combines a Claude Code-style interactive
-agent loop with typed XRD skills, deterministic validators, FullProf and GSAS-II
-backends, experimental-pattern quality control, and reproducible benchmark runners.
+AutoXRD is a terminal-based LLM agent for powder diffraction analysis and
+auditable Rietveld refinement. It combines a code-agent runtime with native file
+and shell tools, reusable XRD skills, scientific backends, deterministic checks,
+and append-only refinement evidence.
 
-The central design rule is:
+The intended division of responsibility is:
 
-> The LLM plans and explains. Crystallographic software performs numerical refinement.
-> Validators decide whether a result is scientifically acceptable.
+> The LLM plans, writes workflows, and interprets evidence. Established
+> crystallographic software performs numerical fitting. Deterministic checks and
+> physical review decide whether a refinement state is acceptable.
 
-A low `Rwp` is therefore never sufficient on its own. AutoXRD also checks convergence,
-residual morphology, parameter stability, occupancies, displacement factors, phase
-fractions, covariance, chemistry, and unresolved peaks.
+AutoXRD is an agent framework, not a replacement for crystallographic software
+or expert review. A lower `Rwp` alone is not treated as proof of a correct model.
 
-## Project Status
+## Capabilities
 
-Implemented:
-
-- Interactive terminal UI with streaming responses and tool calls
-- OpenAI-compatible and Anthropic API support
-- Session persistence, context compression, memory, plans, permissions, and coordinator mode
-- Two-column, opXRD JSON, and Panalytical XRDML pattern readers
-- Pattern QC and conservative peak detection
-- FullProf process runner and output parser
-- FullProf metrics: `Rp`, `Rwp`, `Rexp`, `Chi2`, Bragg R, fractions, convergence, runtime, warnings
-- FullProf PCR semantic catalog, guarded early-stage codeword compiler, and direct PRF reader
-- Validated Le Bail initialization and immutable parent/child FullProf execution
-- Typed scientific contracts for evidence, actions, predictions, snapshots, and gate decisions
-- Evidence-gated refinement transitions with stage, bounds, coupling, and physical checks
-- Deterministic residual morphology and candidate-structure auditing
-- Append-only, hash-chained refinement trajectories with tamper detection
-- Nine XRD skills for QC, structure audit, guarded PCR compilation, Le Bail and Rietveld
-  refinement, residual analysis, gating, and final audit
-- FullProf, opXRD, Dara, SimXRD, and SIMPOD benchmark infrastructure
-
-In progress:
-
-- CIF-to-PCR synthesis and high-risk FullProf limit/restraint compilation
-- Fully autonomous staged refinement policy
-- Candidate phase retrieval and search-match
-- Multi-hypothesis phase identification
-- End-to-end trajectory policy and artifact recovery benchmark runner
-
-See [`proposal.md`](proposal.md) for the original proposal and
-[`docs/research-design.md`](docs/research-design.md) for the implemented research abstraction,
-evaluation protocol, baselines, ablations, and skill-distillation plan. See
-[`docs/fullprof-pcr.md`](docs/fullprof-pcr.md) for the guarded PCR workflow and JSON contract.
-
-## Repository Layout
-
-```text
-AutoXRD/
-├── .autoxrd/skills/          # Project XRD skills
-├── benchmarks/               # Manifests, runners, and benchmark documentation
-├── docs/                     # TUI, configuration, memory, sandbox, and skill docs
-├── resources/                # FullProf and Rietveld reference PDFs
-├── src/
-│   ├── core/                 # Agent engine, LLM clients, config, sessions
-│   ├── features/             # Skills, memory, coordinator, plans, sandbox
-│   ├── tools/                # Read/write/edit/grep/bash/agent tools
-│   ├── tui/                  # Interactive terminal application
-│   └── xrd/                  # Schemas, gates, trajectory, residuals, structures, backends
-└── tests/                    # Unit and integration tests
-```
+- Interactive terminal UI with streaming model responses and tool calls
+- OpenAI-compatible and Anthropic API providers
+- Native `Read`, `Write`, `Edit`, `Glob`, `Grep`, and `Bash` tools
+- Session persistence, memory, context compression, plans, and permissions
+- Project and user skill discovery
+- Powder-pattern readers and quality-control utilities
+- CIF structure inspection and physical validation
+- FullProf execution, output parsing, residual extraction, and guarded PCR editing
+- Headless GSAS-II workflows written and executed by the agent
+- Staged refinement actions with accepted/rejected trajectory records
+- Residual, convergence, correlation, occupancy, displacement, and phase-fraction checks
 
 ## Requirements
 
-- Linux or macOS; the prepared backend setup is currently tested on Ubuntu 24.04 x86-64
 - Python 3.11 or newer
 - Git
-- An OpenAI-compatible or Anthropic API key
-- FullProf for FullProf-backed numerical refinement
-- GSAS-II for GSAS-II-backed scripting workflows
+- An API key for an OpenAI-compatible or Anthropic model
+- Linux or macOS for the terminal application
+- FullProf and/or GSAS-II for numerical refinement
 
-The core TUI can run without FullProf or GSAS-II. Numerical refinement workflows require
-at least one backend.
+The TUI and general code-agent tools work without a crystallographic backend.
+Actual Rietveld refinement requires at least one backend.
 
-## Quick Start
+## Installation
 
-### 1. Clone
-
-```bash
-git clone git@github.com:Stephen-SMJ/AutoXRD.git
-cd AutoXRD
-```
-
-HTTPS also works:
+### Clone and install
 
 ```bash
 git clone https://github.com/Stephen-SMJ/AutoXRD.git
 cd AutoXRD
-```
-
-### 2. Create the environment
-
-```bash
 python3 -m venv .venv
 .venv/bin/pip install --upgrade pip
+.venv/bin/pip install -e ".[xrd]"
+```
+
+For development and tests:
+
+```bash
 .venv/bin/pip install -e ".[dev,xrd]"
 ```
 
-The `xrd` extra installs the common scientific stack:
+The `xrd` extra installs the scientific Python stack, including NumPy, SciPy,
+pandas, Matplotlib, gemmi, pymatgen, PyCifRW, LMFit, pyFAI, FabIO,
+xrayutilities, diffpy.structure, ASE, and related packages. FullProf and GSAS-II
+are configured separately because they are external backends.
 
-- NumPy, SciPy, Pandas, Matplotlib
-- Gemmi, PyCifRW, pymatgen, diffpy.structure, ASE
-- pyFAI and FabIO for detector images
-- xrayutilities, spglib, seekpath
-- pybaselines and LMFit
-- scikit-learn and Optuna
-- h5py, openpyxl, Pysimxrd, and supporting packages
+### Installer script
 
-### 3. Configure the model
-
-AutoXRD defaults to this OpenAI-compatible endpoint configuration:
-
-```text
-provider:   openai
-base_url:   https://token-plan-sgp.xiaomimimo.com/v1
-model:      mimo-v2.5-pro
-max_tokens: 8192
-effort:     high
-```
-
-Set the key only in the environment:
+The repository also provides a user-local installer:
 
 ```bash
-export OPENAI_API_KEY="your-api-key"
+bash install.sh
 ```
 
-Do not place API keys in committed files. AutoXRD loads `.env` locally, but `.env` is ignored
-by Git.
+It installs the base TUI under `~/.autoxrd` and creates
+`~/.local/bin/autoxrd`. Install the `xrd` extra in that environment when the
+scientific Python stack is required:
 
-To use another OpenAI-compatible gateway:
+```bash
+~/.autoxrd/.venv/bin/pip install -e "$HOME/.autoxrd[xrd]"
+```
+
+## Model Configuration
+
+Keep API keys in environment variables or a local `.env` file. `.env` and
+`.autoxrd.toml` are ignored by Git.
+
+### OpenAI-compatible endpoint
 
 ```bash
 export AUTOXRD_PROVIDER=openai
 export OPENAI_API_KEY="your-api-key"
-export OPENAI_BASE_URL="https://gateway.example.com/v1"
-export AUTOXRD_MODEL="your-model"
+export OPENAI_BASE_URL="https://your-provider.example.com/v1"
+export AUTOXRD_MODEL="your-model-name"
 export AUTOXRD_MAX_TOKENS=8192
 export AUTOXRD_EFFORT=high
 ```
 
-Anthropic example:
+`OPENAI_BASE_URL` may point to OpenAI or any gateway that implements the
+OpenAI chat-completions tool-calling interface. Use the exact model identifier
+published by that provider.
+
+### Anthropic endpoint
 
 ```bash
 export AUTOXRD_PROVIDER=anthropic
 export ANTHROPIC_API_KEY="your-api-key"
+export ANTHROPIC_BASE_URL="https://your-gateway.example.com"  # optional
 export AUTOXRD_MODEL="claude-sonnet-4-6"
+export AUTOXRD_MAX_TOKENS=32000
 ```
 
-Configuration can also be stored in `.autoxrd.toml` for non-secret values:
+### TOML configuration
+
+Non-secret settings can be stored globally in
+`~/.config/autoxrd/config.toml` or per project in `.autoxrd.toml`:
 
 ```toml
 provider = "openai"
-model = "mimo-v2.5-pro"
+model = "your-model-name"
 max_tokens = 8192
 effort = "high"
 
 [openai]
-base_url = "https://token-plan-sgp.xiaomimimo.com/v1"
+base_url = "https://your-provider.example.com/v1"
 ```
 
-### 4. Start AutoXRD
+Set the API key in the environment rather than committing it to TOML. A custom
+configuration file can be selected with `--config PATH`.
 
-Recommended development command:
+Configuration precedence is:
+
+1. CLI flags
+2. Environment variables
+3. Project `.autoxrd.toml`
+4. Global `~/.config/autoxrd/config.toml`
+5. Built-in defaults
+
+Useful CLI overrides:
 
 ```bash
-.venv/bin/autoxrd --auto-approve
+autoxrd \
+  --provider openai \
+  --base-url https://your-provider.example.com/v1 \
+  --model your-model-name \
+  --max-tokens 8192 \
+  --effort high
 ```
 
-`--auto-approve` skips confirmation for model-requested commands and file writes. Use it only
-inside an isolated project workspace. To retain permission prompts:
+See [`docs/configuration.md`](docs/configuration.md) for the complete provider
+and configuration reference.
+
+## Starting AutoXRD
+
+Interactive mode with permission prompts:
 
 ```bash
-.venv/bin/autoxrd
+autoxrd
 ```
 
-One-shot usage:
+Autonomous mode for an isolated project workspace:
 
 ```bash
-.venv/bin/autoxrd -p "Run pattern QC on data/sample.xy"
-.venv/bin/autoxrd -p "Review this FullProf result and explain the residual"
+autoxrd --auto-approve
 ```
 
-Other modes:
+`--auto-approve` allows model-requested shell commands and file writes without
+interactive confirmation. Use it only inside a workspace whose contents may be
+modified.
+
+One-shot mode:
 
 ```bash
-.venv/bin/autoxrd --resume 1       # Resume a stored session
-.venv/bin/autoxrd --coordinator    # Enable background workers
-.venv/bin/autoxrd --help           # Show all CLI options
+autoxrd --print "Inspect data/sample.xy and produce a pattern-QC report"
+autoxrd --print "Refine data/pattern.xye against structures/start.cif and preserve every accepted and rejected state"
 ```
 
-## XRD Skills
+Session and coordinator commands:
 
-AutoXRD discovers project skills from `.autoxrd/skills/` and user skills from
-`~/.autoxrd/skills/`.
-
-| Skill | Purpose |
-|---|---|
-| `/xrd-pattern-qc` | Inspect range, step, noise, peaks, metadata, and artifacts |
-| `/xrd-structure-audit` | Parse, fingerprint, and audit a candidate CIF |
-| `/fullprof-le-bail` | Validate and run a FullProf Le Bail initialization |
-| `/fullprof-pcr-compiler` | Compile one typed action into guarded PCR codeword changes |
-| `/fullprof-staged-refinement` | Plan Le Bail and staged Rietveld refinement |
-| `/xrd-residual-features` | Extract deterministic observed-calculated residual features |
-| `/xrd-residual-diagnosis` | Map difference-pattern morphology to controlled tests |
-| `/xrd-trajectory-gate` | Test falsifiable predictions and accept or reject a transition |
-| `/xrd-physical-audit` | Reject unphysical fits and rank competing hypotheses |
-
-Examples inside the TUI:
-
-```text
-/xrd-pattern-qc data/sample.xy
-/xrd-structure-audit structures/sample.cif
-/fullprof-le-bail templates/sample-le-bail.pcr data/sample.dat
-/fullprof-pcr-compiler runs/run_002/spec.json
-/fullprof-staged-refinement data/sample.xy structures/sample.cif
-/xrd-residual-features runs/run_004/residual.dat
-/xrd-residual-diagnosis runs/run_004
-/xrd-trajectory-gate runs/run_005/transition.json
-/xrd-physical-audit runs/run_010/metrics.json
+```bash
+autoxrd --resume 1
+autoxrd --coordinator
+autoxrd --help
 ```
 
-The core research abstraction is the Evidence-Gated Refinement Graph. Each action cites a
-machine-readable feature and predicts a minimum change before the numerical backend runs. The gate
-rejects a lower-Rwp result when that mechanism prediction fails or physical validity regresses.
+## FullProf Configuration
 
-The staged-refinement skill requires each run to preserve an auditable trajectory:
-
-```text
-runs/run_001/
-├── input.pcr
-├── action.json
-├── output.out
-├── result.prf
-├── refined.pcr
-├── metrics.json
-└── warnings.json
-```
-
-## FullProf Backend
-
-FullProf is an external program and is not installed by `pip`. Download the appropriate Linux,
-Windows, or macOS package from the
-[official FullProf downloads page](https://www2017.ill.eu/sites/fullprof/downloads.html).
-
-After installation, expose `fp2k` either on `PATH` or through:
+FullProf is not distributed with this repository. Install it from the
+[official FullProf site](https://www2017.ill.eu/sites/fullprof/downloads.html),
+then expose `fp2k` using one of:
 
 ```bash
 export AUTOXRD_FULLPROF_BIN="$HOME/path/to/fullprof/fp2k"
+# or
+export FULLPROF_BIN="$HOME/path/to/fullprof/fp2k"
+# or place fp2k on PATH
 ```
 
-For a project-local virtual environment, a convenient link is:
+Verify the binary before asking the agent to refine a pattern:
 
 ```bash
-ln -s "$AUTOXRD_FULLPROF_BIN" .venv/bin/fp2k
+"$AUTOXRD_FULLPROF_BIN"
 ```
 
-Smoke test:
+The guarded PCR compiler currently supports constant-wavelength, single-pattern,
+one- or two-phase template families and releases only scale, zero, background,
+lattice, profile, and asymmetry parameters. Atomic positions, displacement
+parameters, occupancies, preferred orientation, and size/strain are represented
+in the refinement schema but are not yet released through this guarded compiler.
+
+AutoXRD can execute broader FullProf workflows through native code tools, but
+direct PCR editing does not receive the compiler's selector-level guarantees.
+
+## GSAS-II Configuration
+
+AutoXRD uses the GSAS-II scripting API for headless workflows. One installation
+method is:
 
 ```bash
-.venv/bin/fp2k
-```
-
-The program should print the FullProf version banner and request a PCR file code.
-
-## GSAS-II Backend
-
-For headless scripting, follow the official GSAS-II pip workflow:
-
-```bash
-sudo apt-get install -y gfortran
 git clone --depth 1 https://github.com/AdvancedPhotonSource/GSAS-II.git \
   "$HOME/.local/share/autoxrd/GSAS-II"
 .venv/bin/pip install "$HOME/.local/share/autoxrd/GSAS-II[useful]"
 ```
 
-Verify:
+Verify the scripting API:
 
 ```bash
 .venv/bin/python - <<'PY'
@@ -287,103 +229,100 @@ print(G2sc.ShowVersions())
 PY
 ```
 
-The GUI additionally requires wxPython and desktop libraries. It is not required for AutoXRD's
-headless agent workflows.
+The desktop GSAS-II GUI is not required. Through `GSASIIscriptable`, the agent
+can create projects and stage scale, background, lattice, profile, atomic,
+occupancy, preferred-orientation, and microstructure refinement when supported
+by the supplied data and model.
 
-## Benchmarks
+## Core XRD Skills
 
-Benchmark data and generated trajectories are intentionally excluded from Git. See
-[`benchmarks/README.md`](benchmarks/README.md) for dataset sources, sizes, limitations, and
-interpretation.
+AutoXRD ships ten XRD skills:
 
-The repository includes **AutoXRD-Bench-100 v2**, a fixed 100-case evaluation with 30 Easy
-select-all questions, 40 Medium scientific reports, and 30 Hard quantitative outcome tasks. Hard
-scores combine deterministic F1/MAE/RMSE-style metrics with a bounded explanation Judge component:
+| Skill | Purpose |
+|---|---|
+| `/xrd-pattern-qc` | Inspect scan range, step, intensity, noise, peaks, and metadata |
+| `/xrd-structure-audit` | Parse and physically audit candidate structures |
+| `/fullprof-le-bail` | Validate and execute FullProf Le Bail initialization |
+| `/fullprof-pcr-compiler` | Compile supported typed actions into guarded PCR codewords |
+| `/fullprof-staged-refinement` | Plan and review staged FullProf refinement |
+| `/gsasii-executable-workflow` | Create auditable GSAS-II workflows from public inputs |
+| `/xrd-residual-features` | Extract deterministic observed/calculated residual features |
+| `/xrd-residual-diagnosis` | Map residual morphology to controlled next actions |
+| `/xrd-trajectory-gate` | Accept or reject state transitions against predictions and checks |
+| `/xrd-physical-audit` | Check cells, occupancies, displacement parameters, fractions, and correlations |
 
-```bash
-.venv/bin/python benchmarks/autoxrd_bench.py validate
-.venv/bin/python benchmarks/autoxrd_bench.py materialize
+Project skills are discovered from `.autoxrd/skills/`. User-level skills can be
+installed under `~/.autoxrd/skills/`. Set `AUTOXRD_SKILLS_DIR` to add an explicit
+built-in skill directory.
+
+Example requests:
+
+```text
+/xrd-pattern-qc data/sample.xy
+/xrd-structure-audit structures/sample.cif
+/fullprof-staged-refinement data/sample.dat structures/start.cif
+/gsasii-executable-workflow data/sample.xye structures/start.cif
 ```
 
-See [`benchmarks/autoxrd_bench_100/README.md`](benchmarks/autoxrd_bench_100/README.md) for the
-isolated Agent run, single frozen-Judge protocol, and final percentage scoring command.
+## Recommended Workspace
 
-### FullProf official examples
+Run AutoXRD from a project directory and keep raw inputs immutable:
 
-```bash
-.venv/bin/python benchmarks/run_fullprof.py
+```text
+project/
+├── .autoxrd.toml
+├── data/                 # measured patterns; treated as read-only inputs
+├── structures/           # CIF or starting structural models
+├── runs/                 # generated scripts, PCR/GPX states, logs, and profiles
+└── artifacts/            # final reports, metrics, difference curves, and audits
 ```
 
-The current manifest covers CeO2, rutile/anatase QPA, Tb2BaCoO5, PbSO4 XRD/neutron,
-Si3N4 QPA, magnetite/hematite, and TOF data.
-
-### Experimental pattern QC
-
-Place the downloaded opXRD archive at `benchmarks/data/opxrd/opxrd.zip`, then run:
-
-```bash
-.venv/bin/python benchmarks/run_pattern_qc.py --opxrd-limit 500
-```
-
-The runner also evaluates all Dara XRDML patterns when the paper supplement is placed under
-`benchmarks/data/dara/supplement/`.
-
-### Dara reference metrics
-
-```bash
-.venv/bin/python benchmarks/analyze_dara_reference.py
-```
-
-Generated artifacts are written to `benchmarks/results/`.
+A refinement result should preserve the backend command, backend version,
+starting state, each accepted or rejected action, numerical metrics, residual
+evidence, physical checks, uncertainty, and limitations.
 
 ## Testing
-
-Run the full AutoXRD suite:
 
 ```bash
 .venv/bin/python -m compileall -q src .autoxrd/skills
 .venv/bin/pip check
+.venv/bin/pytest -q
+```
+
+Linux sandbox integration tests require Bubblewrap and permission to create
+namespaces. Restricted containers may need to omit those platform tests:
+
+```bash
 .venv/bin/pytest -q --ignore=tests/test_sandbox_integration.py
 ```
 
-In the prepared environment, all non-platform tests pass:
+## Repository Layout
 
 ```text
-358 passed
+AutoXRD/
+├── .autoxrd/skills/      # Core XRD skill instructions and deterministic scripts
+├── docs/                 # Configuration, skills, sandbox, memory, and backend docs
+├── src/
+│   ├── core/             # Agent engine, model clients, configuration, sessions
+│   ├── features/         # Skills, plans, memory, coordinator, and sandbox
+│   ├── tools/            # Native file, shell, planning, and agent tools
+│   ├── tui/              # Terminal application
+│   └── xrd/              # XRD schemas, parsers, validators, backends, and trajectories
+├── tests/                # Core unit and integration tests
+├── install.sh
+└── pyproject.toml
 ```
 
-The separate sandbox integration suite requires permission to create Linux namespaces. In restricted
-containers, `bwrap` can fail with `RTM_NEWADDR: Operation not permitted`; this does not affect XRD
-analysis but must be tested on the intended deployment host.
+For a detailed implementation map, see [`framework.md`](framework.md). FullProf
+PCR behavior is documented in [`docs/fullprof-pcr.md`](docs/fullprof-pcr.md).
 
-## Data and Configuration Paths
+## Security and Scientific Use
 
-| Purpose | Path |
-|---|---|
-| Global configuration | `~/.config/autoxrd/config.toml` |
-| Project configuration | `.autoxrd.toml` |
-| Sessions | `~/.config/autoxrd/sessions/` |
-| Memory | `~/.config/autoxrd/memory/` |
-| Plans | `~/.config/autoxrd/plans/` |
-| User skills | `~/.autoxrd/skills/` |
-| Project skills | `.autoxrd/skills/` |
-| Benchmark downloads | `benchmarks/data/` |
-| Benchmark results | `benchmarks/results/` |
-
-## Scientific References
-
-- [FullProf documentation and tutorials](https://www2017.ill.eu/sites/fullprof/documentation.html)
-- [GSAS-II scripting documentation](https://gsas-ii.readthedocs.io/en/latest/GSASIIscriptable.html)
-- [opXRD dataset](https://zenodo.org/records/14279434)
-- [Dara source code](https://github.com/CederGroupHub/dara)
-- [SimXRD-4M source code](https://github.com/Bin-Cao/SimXRD)
-- [SIMPOD source code](https://github.com/BCV-Uniandes/SIMPOD)
-
-## Security Notes
-
-- Never commit API keys, private diffraction data, or proprietary CIF databases.
-- Treat `.pcr`, `.cif`, and downloaded metadata as untrusted input at parser boundaries.
-- `--auto-approve` allows shell commands and writes without confirmation.
-- Keep raw measurements immutable and write preprocessing/refinement results to new paths.
-- Report assumptions, unresolved ambiguity, rejected runs, and physical violations in final
-  scientific outputs.
+- Never commit API keys, proprietary diffraction data, or confidential CIF files.
+- Treat downloaded patterns, PCR files, CIF files, and metadata as untrusted input.
+- Use `--auto-approve` only in an isolated, backed-up workspace.
+- Do not overwrite raw measurements or the only copy of a starting model.
+- Inspect backend warnings, covariance, residuals, and physical validity before
+  accepting a lower residual metric.
+- AutoXRD outputs remain model-dependent scientific analyses and require expert
+  review for consequential use.

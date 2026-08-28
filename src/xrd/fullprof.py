@@ -15,8 +15,8 @@ _CONVENTIONAL_RE = re.compile(
     r"([\d.Ee+-]+)\s+([\d.Ee+-]+)\s+([\d.Ee+-]+)\s+([\d.Ee+-]+)"
 )
 _BRAGG_RE = re.compile(
-    r"Bragg R-factor:\s*([\d.Ee+-]+).*?"
-    r"(?:Fract\(%\):\s*([\d.Ee+-]+))?"
+    r"Bragg R-factor:\s*([\d.Ee+-]+)"
+    r"(?:[^\n]*?Fract\(%\):\s*([\d.Ee+-]+))?"
 )
 _GLOBAL_CHI_RE = re.compile(r"Global user-weigthed Chi2 \(Bragg contrib\.\):\s*([\d.Ee+-]+)")
 _SAFE_CASE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")

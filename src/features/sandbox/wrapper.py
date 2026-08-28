@@ -44,6 +44,7 @@ def build_bwrap_args(
     args.extend(["--dev", "/dev"])  # Minimal /dev
     args.extend(["--proc", "/proc"])  # /proc
     args.extend(["--tmpfs", "/tmp"])  # Temporary filesystem
+    args.extend(["--chmod", "01777", "/tmp"])
 
     # === Writable directories ===
     fs = config.filesystem
@@ -57,10 +58,13 @@ def build_bwrap_args(
         if os.path.exists(deny_path):
             args.extend(["--ro-bind", deny_path, deny_path])
 
-    # === Deny read (mask with empty tmpfs) ===
+    # === Deny read (mask directories with tmpfs and files with /dev/null) ===
     for deny_path in _resolve_paths(fs.deny_read, cwd):
         if os.path.exists(deny_path):
-            args.extend(["--tmpfs", deny_path])
+            if os.path.isdir(deny_path):
+                args.extend(["--tmpfs", deny_path])
+            else:
+                args.extend(["--ro-bind", "/dev/null", deny_path])
 
     # === Working directory ===
     args.extend(["--bind", cwd, cwd])
@@ -76,7 +80,11 @@ def build_bwrap_args(
 
     # === Settings file protection ===
     # Corresponds to sandbox-adapter.ts:230-236
+    denied = [Path(path).resolve() for path in _resolve_paths(fs.deny_read, cwd)]
     for protected in _get_protected_paths(cwd):
+        protected_path = Path(protected).resolve()
+        if any(protected_path == path or protected_path.is_relative_to(path) for path in denied):
+            continue
         if os.path.exists(protected):
             args.extend(["--ro-bind", protected, protected])
 

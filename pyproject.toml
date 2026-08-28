@@ -49,6 +49,9 @@ autoxrd = "tui.app:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/core", "src/features", "src/tui", "src/commands", "src/buddy", "src/tools", "src/xrd"]
 
+[tool.hatch.build.targets.wheel.force-include]
+".autoxrd/skills" = "autoxrd_skills"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]

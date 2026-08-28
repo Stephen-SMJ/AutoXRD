@@ -33,5 +33,5 @@ After every run invoke `/xrd-residual-features` and `/xrd-trajectory-gate`, then
 Rexp, GoF, maximum shift/esd, warnings, unexplained peaks, and parameter correlations. Reject singular, divergent, NaN, or physically invalid runs even
 when Rwp decreases. Do not simultaneously compensate uncertain wavelength with zero and cell.
 
-Consult `resources/FullProf_Manual.pdf` for PCR fields and the official FullProf documentation
+Consult `$FULLPROF_MANUAL` for PCR fields and the official FullProf documentation
 for program-specific semantics. Do not guess a codeword or field position.

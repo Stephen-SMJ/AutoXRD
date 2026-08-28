@@ -74,6 +74,13 @@ def test_glob_missing_dir():
     assert result.is_error
 
 
+@pytest.mark.parametrize("pattern", ["/usr/**/numpy*", "../../usr/**/*.py"])
+def test_glob_rejects_patterns_that_escape_search_path(tmp_path, pattern):
+    result = GlobTool().execute(pattern=pattern, path=str(tmp_path))
+    assert result.is_error
+    assert "relative" in result.content.lower()
+
+
 def test_glob_is_read_only():
     assert GlobTool().is_read_only() is True
 
@@ -195,6 +202,9 @@ def test_bash_captures_stderr():
 def test_bash_nonzero_exit_code():
     result = BashTool().execute(command="exit 1")
     assert "exit code: 1" in result.content
+    assert result.is_error
+    assert result.metadata["returncode"] == 1
+    assert result.metadata["timed_out"] is False
 
 
 def test_bash_timeout():
@@ -205,3 +215,55 @@ def test_bash_timeout():
 
 def test_bash_is_not_read_only():
     assert BashTool().is_read_only() is False
+
+
+def test_mkdir_does_not_change_persistent_cwd(tmp_path):
+    tool = BashTool(cwd=tmp_path)
+    assert not tool.execute(command="mkdir -p run_001").is_error
+    result = tool.execute(command="pwd")
+    assert result.content.strip() == str(tmp_path)
+
+
+def test_bash_workspace_cwd_persists_after_cd(tmp_path):
+    run_dir = tmp_path / "run_001"
+    tool = BashTool(cwd=tmp_path)
+    first = tool.execute(command=f"mkdir -p {run_dir} && cd {run_dir} && printf ready")
+    assert not first.is_error
+    second = tool.execute(command="pwd")
+    assert str(run_dir) in second.content
+
+
+def test_bash_passes_pinned_cwd_to_sandbox(tmp_path):
+    class RecordingSandbox:
+        def __init__(self):
+            self.cwd = None
+
+        def should_sandbox(self, command, dangerously_disable):
+            return True
+
+        def wrap(self, command, cwd=None):
+            self.cwd = cwd
+            return command
+
+    sandbox = RecordingSandbox()
+    result = BashTool(sandbox_manager=sandbox, cwd=tmp_path).execute(command="pwd")
+    assert not result.is_error
+    assert sandbox.cwd == str(tmp_path)
+
+
+def test_bash_does_not_pass_string_none_to_sandbox():
+    class RecordingSandbox:
+        def __init__(self):
+            self.cwd = "unmodified"
+
+        def should_sandbox(self, command, dangerously_disable):
+            return True
+
+        def wrap(self, command, cwd=None):
+            self.cwd = cwd
+            return command
+
+    sandbox = RecordingSandbox()
+    result = BashTool(sandbox_manager=sandbox).execute(command="pwd")
+    assert not result.is_error
+    assert sandbox.cwd is None

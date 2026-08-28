@@ -27,11 +27,27 @@ CLAUDE.md
 
 .autoxrd.toml
 
-# Downloaded benchmark corpora and generated refinement trajectories
-benchmarks/data/
-benchmarks/**/data/
-benchmarks/results/
-benchmarks/*.local.json
+# Research and evaluation code is maintained outside the core distribution.
+# Keep local experiments and downloaded scientific data out of public commits.
+benchmarks/
+bench_web/
+result_analysis/
+paper/
+proposal.md
+resources/
+s*.pdf
+src/xrd/benchmark.py
+src/xrd/benchmark_v2.py
+tests/test_agent_benchmark_runner.py
+tests/test_e2e_*.py
+tests/test_end_to_end_eval.py
+tests/test_iucr_qarr_download.py
+tests/test_realbench_runner.py
+tests/test_xrd_benchmark.py
+docs/research-design.md
+docs/gsasii-tutorials-data.md
+docs/opxrd-integration.md
+docs/xrdbench-e2e-v3.md
 
 
 # Ignore local configuration files that may contain sensitive information

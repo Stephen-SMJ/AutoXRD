@@ -17,6 +17,11 @@ _MAX_RETRIES = 10
 _BASE_DELAY = 0.5
 _MAX_DELAY = 32.0
 _JITTER_FACTOR = 0.25
+_MAX_PROTOCOL_REJECTIONS = 3
+_MALFORMED_TOOL_CALL_RE = re.compile(
+    r"<tool_call\b|<function\s*=|<function_calls\b",
+    re.IGNORECASE,
+)
 
 
 def _compute_retry_delay(attempt: int, retry_after: float | None = None) -> float:
@@ -48,6 +53,33 @@ _CONTEXT_OVERFLOW_RE = re.compile(
 )
 
 
+def _response_model_matches(requested: str, returned: str | None) -> bool:
+    """Compare provider model provenance without accepting family aliases."""
+
+    if not returned:
+        return False
+    expected = requested.strip().casefold()
+    actual = returned.strip().casefold()
+    if actual == expected:
+        return True
+    # Some first-party APIs append an immutable date snapshot to the requested
+    # model name.  Do not accept semantic aliases such as ``-free`` or ``-pro``.
+    suffix = actual[len(expected):] if actual.startswith(expected) else ""
+    return bool(re.fullmatch(r"-(?:\d{8}|\d{4}-\d{2}-\d{2})", suffix))
+
+
+def _response_text(content: list[Any]) -> str:
+    parts: list[str] = []
+    for block in content:
+        if _block_type(block) != "text":
+            continue
+        if isinstance(block, dict):
+            parts.append(str(block.get("text") or ""))
+        else:
+            parts.append(str(getattr(block, "text", "") or ""))
+    return "".join(parts)
+
+
 class AbortedError(Exception):
     """Raised when the current turn is aborted by the user (Esc / Ctrl+C)."""
 
@@ -65,7 +97,10 @@ class Engine:
                  cost_tracker: CostTracker | None = None,
                  advisor_model: str | None = None,
                  advisor_max_uses: int | None = None,
-                 max_tool_calls: int | None = None):
+                 max_tool_calls: int | None = None,
+                 tool_budget_notices: bool = False,
+                 require_response_model_match: bool = False,
+                 reject_malformed_tool_calls: bool = False):
         self._provider = provider
         self._model = resolve_model(model, provider=provider)
         self._max_tokens = max_tokens or default_max_tokens_for_model(
@@ -92,6 +127,9 @@ class Engine:
         self._advisor_enabled = False
         self._max_tool_calls = max_tool_calls
         self._tool_calls_used = 0
+        self._tool_budget_notices = tool_budget_notices
+        self._require_response_model_match = require_response_model_match
+        self._reject_malformed_tool_calls = reject_malformed_tool_calls
 
     # -- advisor toggle --------------------------------------------------------
 
@@ -227,6 +265,7 @@ class Engine:
 
                 # API call with retry
                 final = None
+                protocol_rejections = 0
                 for attempt in range(_MAX_RETRIES):
                     try:
                         _api_t0 = time.monotonic()
@@ -254,25 +293,59 @@ class Engine:
                         self._active_stream = stream_obj
                         with stream_obj as stream:
                             got_text = False
+                            buffered_text: list[str] = []
                             for text in stream.text_stream:
                                 if self._aborted:
                                     raise AbortedError()
                                 got_text = True
-                                yield ("text", text)
+                                if (self._require_response_model_match
+                                        or self._reject_malformed_tool_calls):
+                                    buffered_text.append(text)
+                                else:
+                                    yield ("text", text)
 
                             if self._aborted:
                                 raise AbortedError()
 
-                            if got_text:
-                                yield ("waiting",)
-
                             final = stream.get_final_message()
                             _api_elapsed = time.monotonic() - _api_t0
+                            response_tool_uses = [
+                                block for block in final.content
+                                if _block_type(block) == "tool_use"
+                            ]
+                            rejection_type = None
+                            rejection_message = None
+                            if (self._require_response_model_match
+                                    and not _response_model_matches(
+                                        self._model, final.response_model,
+                                    )):
+                                rejection_type = "ResponseModelMismatch"
+                                rejection_message = (
+                                    f"requested {self._model!r}, provider returned "
+                                    f"{final.response_model!r}"
+                                )
+                            elif (self._reject_malformed_tool_calls
+                                  and not response_tool_uses
+                                  and _MALFORMED_TOOL_CALL_RE.search(
+                                      _response_text(final.content)[:4096]
+                                  )):
+                                rejection_type = "MalformedToolCall"
+                                rejection_message = (
+                                    "provider returned tool-call markup as plain text"
+                                )
+
+                            attempt_status = "rejected" if rejection_type else "ok"
                             yield ("api_attempt", {
                                 "attempt": attempt + 1,
-                                "status": "ok",
+                                "status": attempt_status,
                                 "duration_seconds": _api_elapsed,
                                 "stop_reason": final.stop_reason,
+                                "requested_model": self._model,
+                                "response_model": final.response_model,
+                                **({
+                                    "error_type": rejection_type,
+                                    "message": rejection_message,
+                                } if rejection_type else {}),
                             })
                             # Track token usage / cost
                             if final.usage and self._cost_tracker:
@@ -285,12 +358,34 @@ class Engine:
                                     "advisor_output_tokens": getattr(final.usage, "advisor_output_tokens", 0) or 0,
                                 }, api_duration_s=_api_elapsed, advisor_model=self._advisor_model if self._advisor_enabled else None)
                                 yield ("usage", final.usage, _api_elapsed, final.stop_reason)
+                            if rejection_type:
+                                protocol_rejections += 1
+                                final = None
+                                if protocol_rejections >= _MAX_PROTOCOL_REJECTIONS:
+                                    self._messages.pop()
+                                    yield (
+                                        "error",
+                                        f"API response rejected after {protocol_rejections} "
+                                        f"protocol attempts: {rejection_message}",
+                                    )
+                                    return
+                                yield (
+                                    "error",
+                                    f"API response rejected; retrying "
+                                    f"({protocol_rejections}/{_MAX_PROTOCOL_REJECTIONS}): "
+                                    f"{rejection_message}",
+                                )
+                                continue
+
+                            if buffered_text:
+                                for text in buffered_text:
+                                    yield ("text", text)
+                            if got_text:
+                                yield ("waiting",)
                             # Warn if response was truncated by max_tokens
                             if final.stop_reason == "max_tokens":
                                 yield ("error", "Response truncated: hit max_tokens limit.")
-                            for block in final.content:
-                                if _block_type(block) == "tool_use":
-                                    tool_uses.append(block)
+                            tool_uses.extend(response_tool_uses)
                         break  # success, exit retry loop
                     except AbortedError:
                         raise
@@ -464,12 +559,44 @@ class Engine:
 
                 self._messages.append({
                     "role": "user",
-                    "content": tool_results,
+                    "content": self._add_tool_budget_notice(tool_results),
                 })
                 self._persist(self._messages[-1])
         except AbortedError:
             self.cancel_turn()
             raise
+
+    def _add_tool_budget_notice(self, tool_results: list[dict]) -> list[dict]:
+        """Attach an optional progress reminder to the last tool result.
+
+        Keeping the reminder inside a tool-result block preserves valid
+        OpenAI/Anthropic tool-call ordering while making the live budget
+        visible to the next model turn.
+        """
+
+        if not self._tool_budget_notices or self._max_tool_calls is None or not tool_results:
+            return tool_results
+        remaining = max(0, self._max_tool_calls - self._tool_calls_used)
+        notice = (
+            f"[AutoXRD tool-step progress: {self._tool_calls_used}/"
+            f"{self._max_tool_calls} completed; {remaining} remain.]"
+        )
+        if 1 < remaining <= 5:
+            notice += (
+                f" CRITICAL: use at most the next {remaining - 1} tool steps to create "
+                "ALL required deliverables, including final_report.md, and reserve the "
+                "last tool step to verify that every required path exists. Stop optional analysis."
+            )
+        elif remaining == 1:
+            notice += (
+                " CRITICAL: this is the final available tool step. Use it immediately to "
+                "create any missing required deliverables; do not perform optional analysis."
+            )
+        elif remaining == 0:
+            notice += " Tool budget exhausted; return the best concise final response now."
+        last = tool_results[-1]
+        last["content"] = f"{last.get('content', '')}\n\n{notice}"
+        return tool_results
 
     def _execute_tool(self, tool_use, skip_permission: bool = False) -> ToolResult:
         tool_name = _block_name(tool_use)

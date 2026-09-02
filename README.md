@@ -1,7 +1,30 @@
+<div align="center">
+
 # AutoXRD
 
-<img width="1915" height="821" alt="ChatGPT Image 2026年9月2日 14_21_08" src="https://github.com/user-attachments/assets/427a2c72-0705-488a-bfb6-b8eca2b14e65" />
+### Autonomous LLM Agents and Comprehensive Evaluation for Powder Diffraction Analysis
 
+<img width="100%" alt="AutoXRD: autonomous AI agents for powder X-ray diffraction analysis" src="https://github.com/user-attachments/assets/427a2c72-0705-488a-bfb6-b8eca2b14e65" />
+
+<p>
+  <a href="https://stephen-smj.github.io/AutoXRD/"><img alt="Project website" src="https://img.shields.io/badge/Project-Website-2563EB?style=for-the-badge&logo=githubpages&logoColor=white"></a>
+  <a href="https://arxiv.org/abs/2609.00070"><img alt="Paper" src="https://img.shields.io/badge/arXiv-2609.00070-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white"></a>
+  <a href="https://stephen-smj.github.io/XRDBench/"><img alt="XRDBench" src="https://img.shields.io/badge/Benchmark-XRDBench-EA580C?style=for-the-badge"></a>
+  <a href="https://github.com/Stephen-SMJ/AutoXRD"><img alt="Source code" src="https://img.shields.io/badge/Source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white"></a>
+</p>
+
+<p>
+  <img alt="Python 3.11 or newer" src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white">
+  <img alt="FullProf backend" src="https://img.shields.io/badge/Backend-FullProf-0F766E?style=flat-square">
+  <img alt="GSAS-II backend" src="https://img.shields.io/badge/Backend-GSAS--II-7C3AED?style=flat-square">
+  <img alt="Ten XRD skills" src="https://img.shields.io/badge/XRD_Skills-10-0891B2?style=flat-square">
+</p>
+
+**Plan with an LLM. Execute with crystallographic software. Validate with scientific evidence.**
+
+</div>
+
+## Overview
 
 AutoXRD is a terminal-based LLM agent for powder diffraction analysis and
 auditable Rietveld refinement. It combines a code-agent runtime with native file
@@ -330,7 +353,9 @@ PCR behavior is documented in [`docs/fullprof-pcr.md`](docs/fullprof-pcr.md).
 - AutoXRD outputs remain model-dependent scientific analyses and require expert
   review for consequential use.
 
-## If you find our work useful in your research, consider citing our paper by:
+## Citation
+
+If you use AutoXRD or XRDBench in your research, please cite:
 ```
 @misc{wu2026autoxrdautonomousllmagents,
       title={AutoXRD: Autonomous LLM Agents and Comprehensive Evaluation for Powder Diffraction Analysis}, 

@@ -93,16 +93,15 @@ a { color: inherit; text-decoration: none; }
 .ablation-table .gain { color: #155f48; font-weight: 800; }
 .table-note { margin: 0; padding: 13px 18px; color: var(--muted); background: #fbfcff; font-size: 11px; }
 
-.citation-section { display: grid; grid-template-columns: .8fr 1.2fr; gap: 46px; max-width: 1180px; margin: 0 auto 80px; padding: 44px; border-radius: 24px; color: white; background: linear-gradient(125deg, #102d61, #2b5ca5 55%, #5b37a4); box-shadow: 0 22px 60px rgba(20,48,96,.22); }
+.citation-section { display: grid; grid-template-columns: .8fr 1.2fr; column-gap: 46px; row-gap: 28px; max-width: 1180px; margin: 0 auto 80px; padding: 44px; border-radius: 24px; color: white; background: linear-gradient(125deg, #102d61, #2b5ca5 55%, #5b37a4); box-shadow: 0 22px 60px rgba(20,48,96,.22); }
 .citation-section.citation-pending { grid-template-columns: 1fr; }
 .citation-section .eyebrow { color: #bcd5ff; }
 .citation-section h2 { margin: 9px 0 0; font-size: 38px; }
 .citation-section p { color: #d7e3f8; }
 .citation-section pre { margin: 0; overflow-x: auto; padding: 20px; border: 1px solid rgba(255,255,255,.18); border-radius: 14px; background: rgba(5,20,49,.45); font-size: 11px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-footer { display: block; padding: 32px max(24px, calc((100vw - 1180px) / 2)); color: var(--muted); border-top: 1px solid var(--line); font-size: 12px; text-align: center; }
-.footer-line { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+footer { display: flex; justify-content: space-between; gap: 20px; padding: 28px max(24px, calc((100vw - 1180px) / 2)); color: var(--muted); border-top: 1px solid var(--line); font-size: 12px; }
 footer strong { color: var(--ink); }
-.flag-counter { display: block; width: min(520px, 100%); margin: 22px auto 0; }
+.flag-counter { display: block; grid-column: 1 / -1; width: min(520px, 100%); margin: 0 auto; overflow: hidden; border-radius: 10px; }
 .flag-counter img { display: block; width: 100%; height: auto; margin: 0 auto; }
 
 @media (max-width: 760px) {
@@ -117,6 +116,7 @@ footer strong { color: var(--ink); }
   .track-grid, .citation-section { grid-template-columns: 1fr; }
   .result-callouts { grid-template-columns: 1fr 1fr; }
   .citation-section { margin: 0 18px 60px; padding: 28px 22px; }
+  footer { flex-direction: column; }
 }
 
 @media (max-width: 480px) {

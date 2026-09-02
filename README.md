@@ -326,3 +326,16 @@ PCR behavior is documented in [`docs/fullprof-pcr.md`](docs/fullprof-pcr.md).
   accepting a lower residual metric.
 - AutoXRD outputs remain model-dependent scientific analyses and require expert
   review for consequential use.
+
+## If you find our work useful in your research, consider citing our paper by:
+```
+@misc{wu2026autoxrdautonomousllmagents,
+      title={AutoXRD: Autonomous LLM Agents and Comprehensive Evaluation for Powder Diffraction Analysis}, 
+      author={Yuetong Wu and Maojun Sun},
+      year={2026},
+      eprint={2609.00070},
+      archivePrefix={arXiv},
+      primaryClass={cond-mat.mtrl-sci},
+      url={https://arxiv.org/abs/2609.00070}, 
+}
+```

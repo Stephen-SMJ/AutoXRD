@@ -1,5 +1,8 @@
 # AutoXRD
 
+<img width="1915" height="821" alt="ChatGPT Image 2026年9月2日 14_21_08" src="https://github.com/user-attachments/assets/427a2c72-0705-488a-bfb6-b8eca2b14e65" />
+
+
 AutoXRD is a terminal-based LLM agent for powder diffraction analysis and
 auditable Rietveld refinement. It combines a code-agent runtime with native file
 and shell tools, reusable XRD skills, scientific backends, deterministic checks,

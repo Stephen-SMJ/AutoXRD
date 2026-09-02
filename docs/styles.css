@@ -53,7 +53,7 @@ a { color: inherit; text-decoration: none; }
 .figure-card { margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: 22px; background: white; box-shadow: 0 20px 60px rgba(31, 67, 121, .09); }
 .figure-card img { display: block; width: 100%; height: auto; border-radius: 12px; }
 .figure-card figcaption { padding: 16px 14px 6px; color: var(--muted); font-size: 13px; text-align: center; }
-.benchmark-section, .ablation-section { max-width: none; padding-left: max(24px, calc((100vw - 1180px) / 2)); padding-right: max(24px, calc((100vw - 1180px) / 2)); background: #f2f6fc; }
+.benchmark-section { max-width: none; padding-left: max(24px, calc((100vw - 1180px) / 2)); padding-right: max(24px, calc((100vw - 1180px) / 2)); background: #f2f6fc; }
 .eyebrow.orange { color: var(--orange); }
 .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 30px; }
 .track-card { position: relative; overflow: hidden; padding: 30px; border: 1px solid var(--line); border-radius: 20px; background: white; box-shadow: 0 14px 38px rgba(31,67,121,.07); }
@@ -83,8 +83,6 @@ a { color: inherit; text-decoration: none; }
 .subsection-heading h3 { margin: 8px 0 0; font-size: clamp(26px, 3vw, 38px); line-height: 1.15; letter-spacing: -.025em; }
 .bottleneck-figure { max-width: 900px; margin: 0 auto; }
 
-.ablation-section { background: linear-gradient(135deg, #f6f8ff, #f7f3ff); }
-.ablation-figure { max-width: 760px; margin: 0 auto; }
 .table-shell { overflow-x: auto; border: 1px solid #ccd9ee; border-radius: 18px; background: white; box-shadow: 0 16px 44px rgba(40,57,112,.09); }
 .ablation-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .ablation-table th { padding: 15px 18px; color: white; background: linear-gradient(110deg, #174b9f, #6040b8); text-align: right; font-size: 12px; letter-spacing: .035em; }
@@ -94,12 +92,6 @@ a { color: inherit; text-decoration: none; }
 .ablation-table tbody tr:hover { background: #edf3ff; }
 .ablation-table .gain { color: #155f48; font-weight: 800; }
 .table-note { margin: 0; padding: 13px 18px; color: var(--muted); background: #fbfcff; font-size: 11px; }
-
-.finding-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-.finding-grid article { padding: 28px; border: 1px solid var(--line); border-radius: 18px; background: white; }
-.finding-grid span { display: inline-grid; width: 35px; height: 35px; place-items: center; border-radius: 10px; color: white; background: linear-gradient(145deg, var(--blue), var(--violet)); font-size: 12px; font-weight: 800; }
-.finding-grid h3 { margin: 18px 0 8px; font-size: 20px; }
-.finding-grid p { margin: 0; color: var(--muted); font-size: 14px; }
 
 .citation-section { display: grid; grid-template-columns: .8fr 1.2fr; gap: 46px; max-width: 1180px; margin: 0 auto 80px; padding: 44px; border-radius: 24px; color: white; background: linear-gradient(125deg, #102d61, #2b5ca5 55%, #5b37a4); box-shadow: 0 22px 60px rgba(20,48,96,.22); }
 .citation-section.citation-pending { grid-template-columns: 1fr; }
@@ -118,8 +110,8 @@ footer strong { color: var(--ink); }
   .metric-strip div:nth-child(4) { border-top: 1px solid var(--line); }
   .abstract-card { grid-template-columns: 1fr; gap: 18px; padding: 28px 24px; }
   .section { padding: 64px 18px; }
-  .benchmark-section, .ablation-section { padding-left: 18px; padding-right: 18px; }
-  .track-grid, .finding-grid, .citation-section { grid-template-columns: 1fr; }
+  .benchmark-section { padding-left: 18px; padding-right: 18px; }
+  .track-grid, .citation-section { grid-template-columns: 1fr; }
   .result-callouts { grid-template-columns: 1fr 1fr; }
   .citation-section { margin: 0 18px 60px; padding: 28px 22px; }
   footer { flex-direction: column; }

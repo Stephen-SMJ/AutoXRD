@@ -62,26 +62,11 @@
       <div class="subsection-heading"><span class="eyebrow">Fine-grained analysis</span><h3>Capability profiles expose different scientific bottlenecks</h3></div>
       <figure class="figure-card"><a href="assets/figures/capability-radar.pdf" title="Open the vector PDF"><img src="assets/figures/capability-radar.svg" alt="Fine-grained capability radar charts for QA and E2E tasks"></a><figcaption><strong>Capability profiles.</strong> Models are relatively strong at refinement-history assessment and result acceptance, but remain weak at action selection, phase quantification, indexing, and Rietveld refinement. Click the figure to open its vector PDF.</figcaption></figure>
 
-      <div class="subsection-heading"><span class="eyebrow orange">Workflow bottlenecks</span><h3>Successful execution does not guarantee correct science</h3></div>
-      <figure class="figure-card bottleneck-figure"><a href="assets/figures/e2e-bottlenecks.pdf" title="Open the vector PDF"><img src="assets/figures/e2e-bottlenecks.svg" alt="Heatmap of end-to-end bottlenecks across eleven XRD task families"></a><figcaption><strong>End-to-end bottlenecks.</strong> Indexing often passes execution gates but returns inaccurate cells or HKL assignments, whereas Rietveld refinement is limited by both workflow validity and incomplete deliverables. Click the figure to open its vector PDF.</figcaption></figure>
-
       <div class="subsection-heading"><span class="eyebrow">Efficiency</span><h3>Accuracy, execution time, tokens, steps, and cost</h3></div>
       <figure class="figure-card"><a href="assets/figures/efficiency-tradeoffs.pdf" title="Open the vector PDF"><img src="assets/figures/efficiency-tradeoffs.svg" alt="Efficiency and cost-effectiveness trade-offs across ten models"></a><figcaption><strong>Efficiency and cost-effectiveness.</strong> Resource means pool all 134 tasks per model; GPT-5.6 Luna provides the strongest score–cost trade-off. Click the figure to open its vector PDF.</figcaption></figure>
-    </section>
 
-    <section class="section ablation-section">
-      <div class="section-heading"><span class="eyebrow">Ablation study</span><h2>Which AutoXRD components matter?</h2><p>All six evaluated components improve GPT-5.6 Luna on their targeted XRDBench-QA settings, with the largest gains from result-acceptance checks and final scientific review.</p></div>
-      <figure class="figure-card ablation-figure"><a href="assets/figures/ablation-study.pdf" title="Open the vector PDF"><img src="assets/figures/ablation-study.svg" alt="Score improvements from six AutoXRD components in GPT-5.6 Luna ablations"></a><figcaption><strong>Component effects.</strong> Bars report the full-system score minus the score after removing each component. Click the figure to open its vector PDF.</figcaption></figure>
-    </section>
-
-    <section class="section findings-section">
-      <div class="section-heading centered"><span class="eyebrow orange">Failure analysis</span><h2>Why current XRD agents fail</h2><p>Execution traces distinguish incorrect scientific conclusions from invalid workflows, missing evidence, and uncontrolled stopping behavior.</p></div>
-      <div class="finding-grid">
-        <article><span>01</span><h3>Fit metrics override contradictory evidence</h3><p>All ten models miss the high-risk occupancy/zero–cell coupling cases, and nine accept a lower-R<sub>wp</sub> refinement even when it introduces an unexplained peak.</p></article>
-        <article><span>02</span><h3>Runnable workflows can still be wrong</h3><p>Indexing passes the scoring gate in 90% of runs and completes 80% of deliverables, yet reaches only 26.9 on objective metrics because recovered cells or HKL assignments are often inaccurate.</p></article>
-        <article><span>03</span><h3>Execution and evidence remain fragile</h3><p>46 of 340 end-to-end runs (13.5%) fail an execution or physical gate, while 117 (34.4%) miss at least one completion requirement because code, backend outputs, or required evidence is absent or invalid.</p></article>
-        <article><span>04</span><h3>Refinement and termination break down</h3><p>Rietveld refinement has the lowest gate rate (71.25%) and only 50% complete deliverables; some agents consume nearly all 50 steps without producing a valid result.</p></article>
-      </div>
+      <div class="subsection-heading"><span class="eyebrow orange">Workflow bottlenecks</span><h3>Successful execution does not guarantee correct science</h3></div>
+      <figure class="figure-card bottleneck-figure"><a href="assets/figures/e2e-bottlenecks.pdf" title="Open the vector PDF"><img src="assets/figures/e2e-bottlenecks.svg" alt="Heatmap of end-to-end bottlenecks across eleven XRD task families"></a><figcaption><strong>End-to-end bottlenecks.</strong> Indexing often passes execution gates but returns inaccurate cells or HKL assignments, whereas Rietveld refinement is limited by both workflow validity and incomplete deliverables. Click the figure to open its vector PDF.</figcaption></figure>
     </section>
 
     <section class="citation-section">

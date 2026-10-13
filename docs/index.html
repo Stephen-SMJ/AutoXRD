@@ -6,12 +6,12 @@
   <meta name="description" content="AutoXRD: autonomous LLM agents and comprehensive evaluation for powder X-ray diffraction analysis.">
   <title>AutoXRD | Autonomous Powder Diffraction Analysis</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=20260903-3">
+  <link rel="stylesheet" href="styles.css?v=20261014">
 </head>
 <body>
   <main>
     <nav class="topbar">
-      <a class="brand" href="#top" aria-label="AutoXRD home"><span class="brand-mark">A</span><span>AutoXRD</span></a>
+      <a class="brand" href="#top" aria-label="AutoXRD home"><img class="brand-wordmark" src="assets/autoxrd-wordmark-v3.png" alt="AutoXRD" width="180" height="58"></a>
       <div class="nav-links"><a href="#method">Method</a><a href="https://stephen-smj.github.io/XRDBench/">XRDBench</a><a href="#results">Results</a></div>
     </nav>
     <header class="hero" id="top">
@@ -37,7 +37,7 @@
     </section>
     <section class="section method-section" id="method">
       <div class="section-heading centered"><span class="eyebrow">Method</span><h2>AutoXRD: evidence-preserving scientific execution</h2><p>Planning, refinement backends, physical validation, and auditable trajectories in one agent framework.</p></div>
-      <figure class="figure-card wide-figure"><a href="assets/figures/autoxrd-architecture.pdf" title="Open the vector PDF"><img src="assets/figures/autoxrd-architecture.png" alt="Architecture of AutoXRD and XRDBench"></a><figcaption><strong>AutoXRD overview.</strong> Skill-guided planning, executable XRD tools, deterministic checks, and evidence-preserving refinement trajectories. Click the figure to open its vector PDF.</figcaption></figure>
+      <figure class="figure-card wide-figure"><a href="assets/figures/autoxrd-architecture.pdf"><img src="assets/figures/autoxrd-architecture.png" alt="Architecture of AutoXRD and XRDBench"></a><figcaption><strong>AutoXRD overview.</strong> Skill-guided planning, executable XRD tools, deterministic checks, and evidence-preserving refinement trajectories.</figcaption></figure>
     </section>
 
     <section class="section benchmark-section" id="xrdbench">
@@ -46,7 +46,7 @@
         <article class="track-card qa-card"><span class="track-tag">XRDBench-QA</span><strong>100</strong><h3>Diagnostic tasks</h3><p>Refinement decisions, residual interpretation, parameter recovery, phase analysis, and refinement-history assessment.</p><ul><li>30 easy · 40 medium · 30 hard</li><li>Maximum 20 tool calls</li><li>Exact, objective, and scientific evaluation</li></ul></article>
         <article class="track-card e2e-card"><span class="track-tag">XRDBench-E2E</span><strong>34</strong><h3>Executable workflows</h3><p>State-changing analyses across eleven XRD task families with artifacts, execution gates, and physical validation.</p><ul><li>Measured diffraction patterns</li><li>Maximum 50 agent steps</li><li>Artifact 15% · Metrics 55% · Judge 30%</li></ul></article>
       </div>
-      <figure class="figure-card"><a href="assets/figures/xrdbench-composition.pdf" title="Open the vector PDF"><img src="assets/figures/xrdbench-composition.svg" alt="XRDBench task composition across QA and E2E tracks"></a><figcaption><strong>XRDBench composition.</strong> The two tracks contain 134 tasks spanning diagnostic capabilities and eleven executable XRD task families. Click the figure to open its vector PDF.</figcaption></figure>
+      <figure class="figure-card"><a href="assets/figures/xrdbench-composition.pdf"><img src="assets/figures/xrdbench-composition.svg" alt="XRDBench task composition across QA and E2E tracks"></a><figcaption><strong>XRDBench composition.</strong> The two tracks contain 134 tasks spanning diagnostic capabilities and eleven executable XRD task families.</figcaption></figure>
     </section>
 
     <section class="section results-section" id="results">
@@ -57,16 +57,22 @@
         <article class="accent-orange"><span>E2E mean</span><strong>53.7</strong><p>executable XRD workflows</p></article>
         <article class="accent-violet"><span>Best overall</span><strong>81.1</strong><p>GPT-5.6 Sol</p></article>
       </div>
-      <figure class="figure-card"><a href="assets/figures/overall-performance.pdf" title="Open the vector PDF"><img src="assets/figures/overall-performance.svg" alt="Overall, QA, and E2E performance of ten language models"></a><figcaption><strong>Overall performance.</strong> Scores combine XRDBench-QA and XRDBench-E2E with equal track weight. Click the figure to open its vector PDF.</figcaption></figure>
+      <figure class="figure-card"><a href="assets/figures/overall-performance.pdf"><img src="assets/figures/overall-performance.svg" alt="Overall, QA, and E2E performance of ten language models"></a><figcaption><strong>Overall performance.</strong> Scores combine XRDBench-QA and XRDBench-E2E with equal track weight.</figcaption></figure>
 
       <div class="subsection-heading"><span class="eyebrow">Fine-grained analysis</span><h3>Capability profiles expose different scientific bottlenecks</h3></div>
-      <figure class="figure-card"><a href="assets/figures/capability-radar.pdf" title="Open the vector PDF"><img src="assets/figures/capability-radar.svg" alt="Fine-grained capability radar charts for QA and E2E tasks"></a><figcaption><strong>Capability profiles.</strong> Models are relatively strong at refinement-history assessment and result acceptance, but remain weak at action selection, phase quantification, indexing, and Rietveld refinement. Click the figure to open its vector PDF.</figcaption></figure>
+      <figure class="figure-card"><a href="assets/figures/capability-radar.pdf"><img src="assets/figures/capability-radar.svg" alt="Fine-grained capability radar charts for QA and E2E tasks"></a><figcaption><strong>Capability profiles.</strong> Models are relatively strong at refinement-history assessment and result acceptance, but remain weak at action selection, phase quantification, indexing, and Rietveld refinement.</figcaption></figure>
 
       <div class="subsection-heading"><span class="eyebrow">Efficiency</span><h3>Accuracy, execution time, tokens, steps, and cost</h3></div>
-      <figure class="figure-card"><a href="assets/figures/efficiency-tradeoffs.pdf" title="Open the vector PDF"><img src="assets/figures/efficiency-tradeoffs.svg" alt="Efficiency and cost-effectiveness trade-offs across ten models"></a><figcaption><strong>Efficiency and cost-effectiveness.</strong> Resource means pool all 134 tasks per model; GPT-5.6 Luna provides the strongest score–cost trade-off. Click the figure to open its vector PDF.</figcaption></figure>
+      <figure class="figure-card"><a href="assets/figures/efficiency-tradeoffs.pdf"><img src="assets/figures/efficiency-tradeoffs.svg" alt="Efficiency and cost-effectiveness trade-offs across ten models"></a><figcaption><strong>Efficiency and cost-effectiveness.</strong> Resource means pool all 134 tasks per model; GPT-5.6 Luna provides the strongest score–cost trade-off.</figcaption></figure>
 
-      <div class="subsection-heading"><span class="eyebrow orange">Workflow bottlenecks</span><h3>Successful execution does not guarantee correct science</h3></div>
-      <figure class="figure-card bottleneck-figure"><a href="assets/figures/e2e-bottlenecks.pdf" title="Open the vector PDF"><img src="assets/figures/e2e-bottlenecks.svg" alt="Heatmap of end-to-end bottlenecks across eleven XRD task families"></a><figcaption><strong>End-to-end bottlenecks.</strong> Indexing often passes execution gates but returns inaccurate cells or HKL assignments, whereas Rietveld refinement is limited by both workflow validity and incomplete deliverables. Click the figure to open its vector PDF.</figcaption></figure>
+      <div class="subsection-heading"><span class="eyebrow orange">Workflow bottlenecks</span><h3>Scientific bottlenecks and component effects</h3></div>
+      <figure class="figure-card scientific-effects-figure">
+        <div class="scientific-effects-panels">
+          <div class="scientific-effects-panel"><a href="assets/figures/e2e-bottlenecks.pdf"><img src="assets/figures/e2e-bottlenecks.svg" alt="Heatmap of XRDBench-E2E scores, scoring-gate and completion rates, and effective evaluation components across eleven task families"></a><span class="panel-caption">(a) End-to-end task-family bottlenecks</span></div>
+          <div class="scientific-effects-panel"><a href="assets/figures/ablation-study.pdf"><img src="assets/figures/ablation-study.svg" alt="Full-system score gains from six AutoXRD components on GPT-5.6 Luna"></a><span class="panel-caption">(b) AutoXRD component effects</span></div>
+        </div>
+        <figcaption><strong>Figure 5: Scientific bottlenecks and component effects.</strong> (a) XRDBench-E2E scores, scoring-gate and completion rates, and effective evaluation components across eleven task families, averaged over ten models. (b) Full-system score gains from six AutoXRD components.</figcaption>
+      </figure>
     </section>
 
     <section class="citation-section">
